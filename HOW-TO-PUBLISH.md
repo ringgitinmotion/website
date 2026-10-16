@@ -1,40 +1,29 @@
-# Put the Ringgit in Motion calculators online (free)
+# Ringgit in Motion website: how it's published
 
-This folder is a complete website. Anyone can use it: no Claude account, no login, nothing to install.
+The site is hosted free on **GitHub Pages** from the repository `ringgitinmotion/website`.
 
-| Page | Keyword it answers | File |
+Live address: **https://ringgitinmotion.github.io/website/**
+
+| Page | Comment keyword | Link |
 | --- | --- | --- |
-| Home (all calculators) | — | `index.html` |
-| Kopi calculator | KOPI | `kopi.html` |
-| 50/30/20 budget | JOM | `budget.html` |
-| Compound calculator | GROW | `compound.html` |
-| Real return (inflation) | MONEY | `real-return.html` |
+| Home (all calculators) | — | https://ringgitinmotion.github.io/website/ |
+| Kopi calculator | KOPI | https://ringgitinmotion.github.io/website/kopi.html |
+| 50/30/20 budget | JOM | https://ringgitinmotion.github.io/website/budget.html |
+| Compound calculator | GROW | https://ringgitinmotion.github.io/website/compound.html |
+| Real return (inflation) | MONEY | https://ringgitinmotion.github.io/website/real-return.html |
 
-## Easiest: Netlify Drop (about 2 minutes)
+## One-time setup (already done once Pages is switched on)
 
-1. Go to **app.netlify.com/drop** and sign up for a free account (Google sign-in works).
-2. Drag this whole `website` folder onto the page.
-3. Netlify gives you an address like `random-name-123.netlify.app`. Open it to check.
-4. Rename it: **Site configuration → Change site name** → `ringgitinmotion`.
-   Your site is now **https://ringgitinmotion.netlify.app** (if the name is free).
+Repository → **Settings → Pages** → Source: **Deploy from a branch** → Branch: **main**, folder **/ (root)** → Save.
 
-Links to send for each keyword (Netlify also serves them without `.html`):
+## Updating the site
 
-- KOPI → `https://ringgitinmotion.netlify.app/kopi`
-- JOM → `https://ringgitinmotion.netlify.app/budget`
-- GROW → `https://ringgitinmotion.netlify.app/compound`
-- MONEY → `https://ringgitinmotion.netlify.app/real-return`
-
-Put the home page link in your Instagram bio, so every post points to one place.
-
-## To update later
-
-Change the numbers or text in `_build.py`, run `python _build.py` in this folder, then on Netlify go to
-**Deploys** and drag the folder in again. The address stays the same.
-
-## Other free hosts
-
-- **Cloudflare Pages** (pages.cloudflare.com): "Upload assets", drag the folder.
-- **GitHub Pages**: create a repository, upload the files, turn on Pages in Settings.
-
-`_build.py` and this guide are harmless if uploaded, but they don't need to be.
+1. Change text or numbers in `_build.py` (or `style.css` / `calc.js`).
+2. Run `python _build.py` in this folder to regenerate the pages.
+3. Commit and push:
+   ```
+   git add -A
+   git commit -m "Describe the change"
+   git push
+   ```
+4. GitHub Pages republishes within a minute or two.
