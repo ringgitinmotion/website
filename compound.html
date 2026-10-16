@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compound Calculator · Ringgit in Motion</title>
+<meta name="description" content="See how a monthly amount grows with compound interest, and what waiting costs.">
+<meta property="og:title" content="Compound Calculator · Ringgit in Motion">
+<meta property="og:description" content="See how a monthly amount grows with compound interest, and what waiting costs.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html" aria-current="page">Compound</a><a href="real-return.html">Real return</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Compound calculator · comment GROW</div>
+  <p class="q">how much could a little each month become?</p>
+  <h1>Compound <span>Calculator</span></h1>
+</section>
+<section class="tool" aria-label="Compound calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="monthly">Each month (RM)</label><input class="num" id="monthly" type="number" min="0" max="1000000" step="10" value="100" inputmode="decimal"></div>
+      <input id="monthlyR" type="range" min="10" max="3000" step="10" value="100" aria-label="Each month (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="start">Starting amount (RM)</label><input class="num" id="start" type="number" min="0" max="100000000" step="100" value="0" inputmode="decimal"></div>
+      <input id="startR" type="range" min="0" max="50000" step="100" value="0" aria-label="Starting amount (RM) slider">
+      <span class="hint">Money you already have to put in on day one.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="rate">Yearly return (%)</label><input class="num" id="rate" type="number" min="0" max="20" step="0.1" value="6" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="0" max="12" step="0.1" value="6" aria-label="Yearly return (%) slider">
+      <span class="hint">An assumption. Real returns go up and down.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="years">Years</label><input class="num" id="years" type="number" min="1" max="60" step="1" value="30" inputmode="decimal"></div>
+      <input id="yearsR" type="range" min="1" max="45" step="1" value="30" aria-label="Years slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">RM100 a month for 30 years at 6% grows to</p>
+    <p class="big" id="big">RM100,452</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>You put in</span><span><b style="background: var(--gold-fill)"></b>Growth</span></div>
+    <dl class="lines">
+      <div><dt>You put in</dt><dd id="paid">-</dd></div>
+      <div class="gold"><dt>Growth on top</dt><dd id="growth">-</dd></div>
+      <div class="gold"><dt>Growth share of the total</dt><dd id="share">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Growth chart"></svg>
+      <figcaption>The lilac area is what you put in. The gold above it is growth, and it speeds up over time.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Cost of waiting">
+  <h2>What does waiting cost?</h2>
+  <div class="field" style="max-width: 520px;">
+    <div class="row"><label for="delay">Start this many years later</label><input class="num" id="delay" type="number" min="0" max="40" step="1" value="10" inputmode="numeric"></div>
+    <input id="delayR" type="range" min="0" max="20" step="1" value="10" aria-label="Years later slider">
+  </div>
+  <p class="out" id="waitOut"></p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm, fv, grow } = RIM;
+const total = (s, months) => fv(s.monthly, s.rate, months) + grow(s.start, s.rate, months);
+RIM.form("rim-compound", { monthly: 100, start: 0, rate: 6, years: 30, delay: 10 },
+  { monthly: [0, 1000000], start: [0, 100000000], rate: [0, 20], years: [1, 60], delay: [0, 40] }, (s) => {
+  const n = s.years * 12, t = total(s, n), paid = s.start + s.monthly * n, g = Math.max(0, t - paid);
+  $("lead").textContent = `${rm(s.monthly)} a month${s.start ? ` plus ${rm(s.start)} up front` : ""} for ${s.years} years at ${s.rate}% grows to`;
+  $("big").textContent = rm(t);
+  $("paid").textContent = rm(paid); $("growth").textContent = rm(g);
+  $("share").textContent = t > 0 ? Math.round((g / t) * 100) + "%" : "0%";
+  const pp = t > 0 ? (paid / t) * 100 : 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => total(s, 12 * y)), p = yrs.map((y) => s.start + s.monthly * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  const left = Math.max(0, s.years - s.delay), late = total(s, left * 12);
+  $("waitOut").innerHTML = s.delay === 0 ? "Starting today gives you the full result above."
+    : s.delay >= s.years ? `Waiting ${s.delay} years leaves no time to grow inside a ${s.years}-year plan.`
+    : `Start ${s.delay} year${s.delay === 1 ? "" : "s"} later and you end with <strong>${rm(late)}</strong>. Waiting costs about <strong>${rm(t - late)}</strong>.`;
+  window.__copy = `${rm(s.monthly)} a month for ${s.years} years at ${s.rate}% grows to about ${rm(t)}. I only put in ${rm(paid)}. (Ringgit in Motion compound calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

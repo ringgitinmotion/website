@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>50/30/20 Budget · Ringgit in Motion</title>
+<meta name="description" content="Split your take-home pay into needs, wants and savings with the 50/30/20 rule.">
+<meta property="og:title" content="50/30/20 Budget · Ringgit in Motion">
+<meta property="og:description" content="Split your take-home pay into needs, wants and savings with the 50/30/20 rule.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html" aria-current="page">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">50/30/20 budget · comment JOM</div>
+  <p class="q">where should your paycheck go?</p>
+  <h1>50/30/20 <span>Budget</span></h1>
+</section>
+<section class="tool" aria-label="50/30/20 budget calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="pay">Take-home pay a month (RM)</label><input class="num" id="pay" type="number" min="0" max="1000000" step="50" value="4000" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1000" max="20000" step="50" value="4000" aria-label="Take-home pay a month (RM) slider">
+      <span class="hint">After EPF, SOCSO and tax: what lands in your bank.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="needs">Needs (%)</label><input class="num" id="needs" type="number" min="0" max="100" step="1" value="50" inputmode="decimal"></div>
+      <input id="needsR" type="range" min="20" max="80" step="1" value="50" aria-label="Needs (%) slider">
+      <span class="hint">Rent, food, transport, bills. If yours cost more than 50%, set your real number.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="save">Savings (%)</label><input class="num" id="save" type="number" min="0" max="100" step="1" value="20" inputmode="decimal"></div>
+      <input id="saveR" type="range" min="0" max="50" step="1" value="20" aria-label="Savings (%) slider">
+      <span class="hint">Emergency fund first, then investing and extra debt payments.</span>
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">Your RM4,000 a month splits into</p>
+    <p class="big" id="big">50/30/20</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>Needs</span><span><b style="background: rgba(255,243,224,.55)"></b>Wants</span><span><b style="background: var(--gold-fill)"></b>Savings</span></div>
+    <dl class="lines">
+      <div><dt>Needs a month</dt><dd id="needsA">-</dd></div>
+      <div><dt>Wants a month</dt><dd id="wantsA">-</dd></div>
+      <div class="gold"><dt>Savings a month</dt><dd id="saveA">-</dd></div>
+      <div class="gold"><dt>Savings in a year</dt><dd id="saveY">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+  </div>
+</section>
+<section class="mid" aria-label="What the savings become">
+  <h2>What your savings could become</h2>
+  <p class="out" id="growOut"></p>
+  <p class="fine">Assumes the savings are invested at 6% a year, compounded monthly. Real returns go up and down.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm, fv } = RIM;
+RIM.form("rim-budget", { pay: 4000, needs: 50, save: 20 }, { pay: [0, 1000000], needs: [0, 100], save: [0, 100] }, (s) => {
+  let needs = s.needs, save = Math.min(s.save, 100 - needs), wants = Math.max(0, 100 - needs - save);
+  const a = (p) => (s.pay * p) / 100;
+  $("lead").textContent = `Your ${rm(s.pay)} a month splits into`;
+  $("big").textContent = `${Math.round(needs)}/${Math.round(wants)}/${Math.round(save)}`;
+  $("needsA").textContent = rm(a(needs)); $("wantsA").textContent = rm(a(wants));
+  $("saveA").textContent = rm(a(save)); $("saveY").textContent = rm(a(save) * 12);
+  $("splitA").style.cssText = `width:${needs}%;background:var(--brand-ink)`;
+  $("splitB").style.cssText = `width:${wants}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = `width:${save}%;background:var(--gold-fill)`;
+  const m = a(save);
+  $("growOut").innerHTML = m <= 0 ? "Set a savings percentage to see what it could grow to."
+    : `Saving <strong>${rm(m)}</strong> a month could grow to <strong>${rm(fv(m, 6, 120))}</strong> in 10 years and <strong>${rm(fv(m, 6, 240))}</strong> in 20.`;
+  window.__copy = `My 50/30/20 on ${rm(s.pay)}: needs ${rm(a(needs))}, wants ${rm(a(wants))}, savings ${rm(a(save))} a month. (Ringgit in Motion budget calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

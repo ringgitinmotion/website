@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real Return Calculator · Ringgit in Motion</title>
+<meta name="description" content="What your savings can really buy after inflation, in Malaysian ringgit.">
+<meta property="og:title" content="Real Return Calculator · Ringgit in Motion">
+<meta property="og:description" content="What your savings can really buy after inflation, in Malaysian ringgit.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html" aria-current="page">Real return</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Real return · comment MONEY</div>
+  <p class="q">is your savings account keeping up with prices?</p>
+  <h1>Real <span>Return</span></h1>
+</section>
+<section class="tool" aria-label="Real return calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="bal">Savings balance (RM)</label><input class="num" id="bal" type="number" min="0" max="100000000" step="500" value="10000" inputmode="decimal"></div>
+      <input id="balR" type="range" min="500" max="200000" step="500" value="10000" aria-label="Savings balance (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="rate">Interest rate (% a year)</label><input class="num" id="rate" type="number" min="0" max="20" step="0.05" value="0.25" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="0" max="6" step="0.05" value="0.25" aria-label="Interest rate (% a year) slider">
+      <span class="hint">Basic savings at the big banks pay about 0.25%. Check your own account.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="infl">Inflation (% a year)</label><input class="num" id="infl" type="number" min="0" max="20" step="0.1" value="1.9" inputmode="decimal"></div>
+      <input id="inflR" type="range" min="0" max="6" step="0.1" value="1.9" aria-label="Inflation (% a year) slider">
+      <span class="hint">Malaysia: 1.9% in August 2026 (DOSM).</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="years">Years</label><input class="num" id="years" type="number" min="1" max="60" step="1" value="10" inputmode="decimal"></div>
+      <input id="yearsR" type="range" min="1" max="40" step="1" value="10" aria-label="Years slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">After 10 years your RM10,000 can really buy</p>
+    <p class="big" id="big">RM8,494</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>What it buys</span><span><b style="background: var(--gold-fill)"></b>Lost to prices</span></div>
+    <dl class="lines">
+      <div><dt>Balance your app shows</dt><dd id="nominal">-</dd></div>
+      <div><dt>Buying power lost vs today</dt><dd id="lost">-</dd></div>
+      <div class="gold"><dt>Your real return a year</dt><dd id="real">-</dd></div>
+      <div class="gold"><dt>Rate needed to break even</dt><dd id="even">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Balance versus buying power chart"></svg>
+      <figcaption>The dashed line is the balance your app shows. The gold area is what that money can actually buy, in today’s ringgit.</figcaption></figure>
+  </div>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+RIM.form("rim-real", { bal: 10000, rate: 0.25, infl: 1.9, years: 10 }, { bal: [0, 100000000], rate: [0, 20], infl: [0, 20], years: [1, 60] }, (s) => {
+  const nomAt = (y) => s.bal * Math.pow(1 + s.rate / 100, y);
+  const realAt = (y) => nomAt(y) / Math.pow(1 + s.infl / 100, y);
+  const nom = nomAt(s.years), real = realAt(s.years), lost = Math.max(0, s.bal - real);
+  const rr = ((1 + s.rate / 100) / (1 + s.infl / 100) - 1) * 100;
+  $("lead").textContent = `After ${s.years} year${s.years === 1 ? "" : "s"} your ${rm(s.bal)} can really buy`;
+  $("big").textContent = rm(real);
+  $("nominal").textContent = rm(nom);
+  $("lost").textContent = rm(lost);
+  $("real").textContent = (rr >= 0 ? "+" : "") + rr.toFixed(2) + "%";
+  $("even").textContent = "above " + s.infl + "%";
+  const pr = nom > 0 ? (real / nom) * 100 : 100;
+  $("splitA").style.cssText = `width:${Math.min(100, pr)}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${Math.max(0, 100 - pr)}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "r", values: yrs.map(realAt) }, { kind: "line-n", values: yrs.map(nomAt) }], "r");
+  window.__copy = `My ${rm(s.bal)} at ${s.rate}% with ${s.infl}% inflation: in ${s.years} years it shows ${rm(nom)} but buys only ${rm(real)} in today's money. (Ringgit in Motion real-return calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

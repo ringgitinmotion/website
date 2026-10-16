@@ -1,0 +1,312 @@
+"""Builds the Ringgit in Motion site: shared head/nav/footer + each page's body. Run: python _build.py"""
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+PAGES = [
+    # file, nav label, keyword
+    ("kopi.html", "Kopi", "KOPI"),
+    ("budget.html", "50/30/20", "JOM"),
+    ("compound.html", "Compound", "GROW"),
+    ("real-return.html", "Real return", "MONEY"),
+]
+
+
+def head(title, desc):
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+"""
+
+
+def nav(current):
+    links = "".join(
+        f'<a href="{f}"{" aria-current=\"page\"" if f == current else ""}>{label}</a>' for f, label, _ in PAGES
+    )
+    return f"""<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators">{links}</nav>
+</header>
+"""
+
+
+FOOTER = """<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+"""
+
+
+def page(file, title, desc, body, script):
+    html = head(title, desc) + nav(file) + "<main>\n" + body + "\n</main>\n" + FOOTER + "<script>\n" + script + "\n</script>\n</body>\n</html>\n"
+    (HERE / file).write_text(html, encoding="utf-8")
+    print("wrote", file)
+
+
+def field(id_, label, value, rmin, rmax, step, nmin, nmax, hint=""):
+    h = f'\n      <span class="hint">{hint}</span>' if hint else ""
+    return f"""    <div class="field">
+      <div class="row"><label for="{id_}">{label}</label><input class="num" id="{id_}" type="number" min="{nmin}" max="{nmax}" step="{step}" value="{value}" inputmode="decimal"></div>
+      <input id="{id_}R" type="range" min="{rmin}" max="{rmax}" step="{step}" value="{value}" aria-label="{label} slider">{h}
+    </div>"""
+
+
+def card(lead, big, lines, legend=""):
+    rows = "\n".join(
+        f'      <div{" class=\"gold\"" if gold else ""}><dt>{dt}</dt><dd id="{id_}">-</dd></div>' for dt, id_, gold in lines
+    )
+    return f"""  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">{lead}</p>
+    <p class="big" id="big">{big}</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend">{legend}</div>
+    <dl class="lines">
+{rows}
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>"""
+
+
+def mast(eyebrow, q, h1):
+    return f"""<section class="mast">
+  <div class="eyebrow">{eyebrow}</div>
+  <p class="q">{q}</p>
+  <h1>{h1}</h1>
+</section>"""
+
+
+# ---------------------------------------------------------------- home
+tiles = [
+    ("kopi.html", "KOPI", "Kopi calculator", "What your daily coffee would grow to if you invested it instead."),
+    ("budget.html", "JOM", "50/30/20 budget", "Split your take-home pay into needs, wants and savings."),
+    ("compound.html", "GROW", "Compound calculator", "Watch a monthly amount grow over the years, and see what waiting costs."),
+    ("real-return.html", "MONEY", "Real return", "What your savings can really buy after inflation."),
+]
+home_body = """<section class="hero">
+  <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
+  <div>
+    <div class="eyebrow">Ringgit in Motion</div>
+    <h1>Make your money <span>move.</span></h1>
+    <p class="tagline">Free money calculators for Malaysians. No sign-up, nothing to install.</p>
+  </div>
+</section>
+<section class="mid" aria-label="Calculators">
+  <h2>Pick a calculator</h2>
+  <p>Came from a post? The keyword you commented is on its tile.</p>
+  <div class="grid4">
+""" + "\n".join(
+    f'    <a class="tile" href="{f}"><span class="kw">{kw}</span><h3>{t}</h3><p>{d}</p></a>' for f, kw, t, d in tiles
+) + """
+  </div>
+</section>"""
+page("index.html", "Ringgit in Motion", "Free money calculators for Malaysians: coffee, 50/30/20 budget, compound growth and real return after inflation.", home_body, "")
+
+# ---------------------------------------------------------------- kopi
+kopi_body = mast("Kopi calculator · comment KOPI", "what does your daily coffee really cost?", "Kopi <span>Calculator</span>") + """
+<section class="tool" aria-label="Kopi calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("price", "Price per cup (RM)", 15, 1, 40, 0.5, 0, 100),
+    field("cups", "Cups a month", 22, 1, 60, 1, 0, 120, "22 is one cup every workday."),
+    '    <div class="divider"></div>',
+    field("rate", "Yearly return (%)", 6, 0, 12, 0.1, 0, 20, "An assumption. Real returns go up and down."),
+    field("years", "Years", 20, 1, 40, 1, 1, 50),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("RM330 a month, invested for 20 years at 6%, grows to", "RM152,473", [
+    ("Spent on coffee a month", "monthly", False), ("A year", "yearly", False),
+    ("You put in", "paid", False), ("Growth on top", "growth", True)],
+    '<span><b style="background: var(--brand-ink)"></b>You put in</span><span><b style="background: var(--gold-fill)"></b>Growth</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Growth chart"></svg>
+      <figcaption>The lilac area is what you put in. The gold above it is growth from compounding.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Middle ground">
+  <h2>Don’t want to quit? Skip a few.</h2>
+  <div class="field" style="max-width: 520px;">
+    <div class="row"><label for="skip">Cups you skip a week</label><input class="num" id="skip" type="number" min="0" max="21" step="1" value="3" inputmode="numeric"></div>
+    <input id="skipR" type="range" min="0" max="14" step="1" value="3" aria-label="Cups skipped a week slider">
+  </div>
+  <p class="out" id="skipOut"></p>
+</section>"""
+kopi_js = r"""
+const { $, rm, fv } = RIM;
+RIM.form("rim-kopi", { price: 15, cups: 22, rate: 6, years: 20, skip: 3 },
+  { price: [0, 100], cups: [0, 120], rate: [0, 20], years: [1, 50], skip: [0, 21] }, (s) => {
+  const m = s.price * s.cups, n = s.years * 12, total = fv(m, s.rate, n), paid = m * n;
+  $("lead").textContent = `${rm(m)} a month, invested for ${s.years} year${s.years === 1 ? "" : "s"} at ${s.rate}%, grows to`;
+  $("big").textContent = rm(total);
+  $("monthly").textContent = rm(m); $("yearly").textContent = rm(m * 12);
+  $("paid").textContent = rm(paid); $("growth").textContent = rm(Math.max(0, total - paid));
+  const pp = total > 0 ? (paid / total) * 100 : 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: yrs.map((y) => fv(m, s.rate, 12 * y)) }, { kind: "area-p", values: yrs.map((y) => m * 12 * y) }, { kind: "line-v", key: "v", values: yrs.map((y) => fv(m, s.rate, 12 * y)) }], "v");
+  const sm = (s.price * s.skip * 52) / 12;
+  $("skipOut").innerHTML = s.skip === 0 ? "Set how many cups you would skip each week to see what that alone could grow to."
+    : `Skipping ${s.skip} cup${s.skip === 1 ? "" : "s"} a week frees up <strong>${rm(sm)}</strong> a month, which grows to <strong>${rm(fv(sm, s.rate, n))}</strong> in ${s.years} years.`;
+  window.__copy = `My RM${s.price} coffee, ${s.cups} cups a month = ${rm(m)}/month. Invested at ${s.rate}% for ${s.years} years, that's about ${rm(total)}. (Ringgit in Motion Kopi Calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("kopi.html", "Kopi Calculator · Ringgit in Motion", "What your daily coffee would grow to if you invested the money instead.", kopi_body, kopi_js)
+
+# ---------------------------------------------------------------- 50/30/20
+budget_body = mast("50/30/20 budget · comment JOM", "where should your paycheck go?", "50/30/20 <span>Budget</span>") + """
+<section class="tool" aria-label="50/30/20 budget calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("pay", "Take-home pay a month (RM)", 4000, 1000, 20000, 50, 0, 1000000, "After EPF, SOCSO and tax: what lands in your bank."),
+    '    <div class="divider"></div>',
+    field("needs", "Needs (%)", 50, 20, 80, 1, 0, 100, "Rent, food, transport, bills. If yours cost more than 50%, set your real number."),
+    field("save", "Savings (%)", 20, 0, 50, 1, 0, 100, "Emergency fund first, then investing and extra debt payments."),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("Your RM4,000 a month splits into", "50/30/20", [
+    ("Needs a month", "needsA", False), ("Wants a month", "wantsA", False),
+    ("Savings a month", "saveA", True), ("Savings in a year", "saveY", True)],
+    '<span><b style="background: var(--brand-ink)"></b>Needs</span><span><b style="background: rgba(255,243,224,.55)"></b>Wants</span><span><b style="background: var(--gold-fill)"></b>Savings</span>') + """
+  </div>
+</section>
+<section class="mid" aria-label="What the savings become">
+  <h2>What your savings could become</h2>
+  <p class="out" id="growOut"></p>
+  <p class="fine">Assumes the savings are invested at 6% a year, compounded monthly. Real returns go up and down.</p>
+</section>"""
+budget_js = r"""
+const { $, rm, fv } = RIM;
+RIM.form("rim-budget", { pay: 4000, needs: 50, save: 20 }, { pay: [0, 1000000], needs: [0, 100], save: [0, 100] }, (s) => {
+  let needs = s.needs, save = Math.min(s.save, 100 - needs), wants = Math.max(0, 100 - needs - save);
+  const a = (p) => (s.pay * p) / 100;
+  $("lead").textContent = `Your ${rm(s.pay)} a month splits into`;
+  $("big").textContent = `${Math.round(needs)}/${Math.round(wants)}/${Math.round(save)}`;
+  $("needsA").textContent = rm(a(needs)); $("wantsA").textContent = rm(a(wants));
+  $("saveA").textContent = rm(a(save)); $("saveY").textContent = rm(a(save) * 12);
+  $("splitA").style.cssText = `width:${needs}%;background:var(--brand-ink)`;
+  $("splitB").style.cssText = `width:${wants}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = `width:${save}%;background:var(--gold-fill)`;
+  const m = a(save);
+  $("growOut").innerHTML = m <= 0 ? "Set a savings percentage to see what it could grow to."
+    : `Saving <strong>${rm(m)}</strong> a month could grow to <strong>${rm(fv(m, 6, 120))}</strong> in 10 years and <strong>${rm(fv(m, 6, 240))}</strong> in 20.`;
+  window.__copy = `My 50/30/20 on ${rm(s.pay)}: needs ${rm(a(needs))}, wants ${rm(a(wants))}, savings ${rm(a(save))} a month. (Ringgit in Motion budget calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("budget.html", "50/30/20 Budget · Ringgit in Motion", "Split your take-home pay into needs, wants and savings with the 50/30/20 rule.", budget_body, budget_js)
+
+# ---------------------------------------------------------------- compound
+comp_body = mast("Compound calculator · comment GROW", "how much could a little each month become?", "Compound <span>Calculator</span>") + """
+<section class="tool" aria-label="Compound calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("monthly", "Each month (RM)", 100, 10, 3000, 10, 0, 1000000),
+    field("start", "Starting amount (RM)", 0, 0, 50000, 100, 0, 100000000, "Money you already have to put in on day one."),
+    '    <div class="divider"></div>',
+    field("rate", "Yearly return (%)", 6, 0, 12, 0.1, 0, 20, "An assumption. Real returns go up and down."),
+    field("years", "Years", 30, 1, 45, 1, 1, 60),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("RM100 a month for 30 years at 6% grows to", "RM100,452", [
+    ("You put in", "paid", False), ("Growth on top", "growth", True), ("Growth share of the total", "share", True)],
+    '<span><b style="background: var(--brand-ink)"></b>You put in</span><span><b style="background: var(--gold-fill)"></b>Growth</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Growth chart"></svg>
+      <figcaption>The lilac area is what you put in. The gold above it is growth, and it speeds up over time.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Cost of waiting">
+  <h2>What does waiting cost?</h2>
+  <div class="field" style="max-width: 520px;">
+    <div class="row"><label for="delay">Start this many years later</label><input class="num" id="delay" type="number" min="0" max="40" step="1" value="10" inputmode="numeric"></div>
+    <input id="delayR" type="range" min="0" max="20" step="1" value="10" aria-label="Years later slider">
+  </div>
+  <p class="out" id="waitOut"></p>
+</section>"""
+comp_js = r"""
+const { $, rm, fv, grow } = RIM;
+const total = (s, months) => fv(s.monthly, s.rate, months) + grow(s.start, s.rate, months);
+RIM.form("rim-compound", { monthly: 100, start: 0, rate: 6, years: 30, delay: 10 },
+  { monthly: [0, 1000000], start: [0, 100000000], rate: [0, 20], years: [1, 60], delay: [0, 40] }, (s) => {
+  const n = s.years * 12, t = total(s, n), paid = s.start + s.monthly * n, g = Math.max(0, t - paid);
+  $("lead").textContent = `${rm(s.monthly)} a month${s.start ? ` plus ${rm(s.start)} up front` : ""} for ${s.years} years at ${s.rate}% grows to`;
+  $("big").textContent = rm(t);
+  $("paid").textContent = rm(paid); $("growth").textContent = rm(g);
+  $("share").textContent = t > 0 ? Math.round((g / t) * 100) + "%" : "0%";
+  const pp = t > 0 ? (paid / t) * 100 : 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => total(s, 12 * y)), p = yrs.map((y) => s.start + s.monthly * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  const left = Math.max(0, s.years - s.delay), late = total(s, left * 12);
+  $("waitOut").innerHTML = s.delay === 0 ? "Starting today gives you the full result above."
+    : s.delay >= s.years ? `Waiting ${s.delay} years leaves no time to grow inside a ${s.years}-year plan.`
+    : `Start ${s.delay} year${s.delay === 1 ? "" : "s"} later and you end with <strong>${rm(late)}</strong>. Waiting costs about <strong>${rm(t - late)}</strong>.`;
+  window.__copy = `${rm(s.monthly)} a month for ${s.years} years at ${s.rate}% grows to about ${rm(t)}. I only put in ${rm(paid)}. (Ringgit in Motion compound calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("compound.html", "Compound Calculator · Ringgit in Motion", "See how a monthly amount grows with compound interest, and what waiting costs.", comp_body, comp_js)
+
+# ---------------------------------------------------------------- real return
+real_body = mast("Real return · comment MONEY", "is your savings account keeping up with prices?", "Real <span>Return</span>") + """
+<section class="tool" aria-label="Real return calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("bal", "Savings balance (RM)", 10000, 500, 200000, 500, 0, 100000000),
+    field("rate", "Interest rate (% a year)", 0.25, 0, 6, 0.05, 0, 20, "Basic savings at the big banks pay about 0.25%. Check your own account."),
+    field("infl", "Inflation (% a year)", 1.9, 0, 6, 0.1, 0, 20, "Malaysia: 1.9% in August 2026 (DOSM)."),
+    field("years", "Years", 10, 1, 40, 1, 1, 60),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("After 10 years your RM10,000 can really buy", "RM8,494", [
+    ("Balance your app shows", "nominal", False), ("Buying power lost vs today", "lost", False),
+    ("Your real return a year", "real", True), ("Rate needed to break even", "even", True)],
+    '<span><b style="background: var(--brand-ink)"></b>What it buys</span><span><b style="background: var(--gold-fill)"></b>Lost to prices</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Balance versus buying power chart"></svg>
+      <figcaption>The dashed line is the balance your app shows. The gold area is what that money can actually buy, in today’s ringgit.</figcaption></figure>
+  </div>
+</section>"""
+real_js = r"""
+const { $, rm } = RIM;
+RIM.form("rim-real", { bal: 10000, rate: 0.25, infl: 1.9, years: 10 }, { bal: [0, 100000000], rate: [0, 20], infl: [0, 20], years: [1, 60] }, (s) => {
+  const nomAt = (y) => s.bal * Math.pow(1 + s.rate / 100, y);
+  const realAt = (y) => nomAt(y) / Math.pow(1 + s.infl / 100, y);
+  const nom = nomAt(s.years), real = realAt(s.years), lost = Math.max(0, s.bal - real);
+  const rr = ((1 + s.rate / 100) / (1 + s.infl / 100) - 1) * 100;
+  $("lead").textContent = `After ${s.years} year${s.years === 1 ? "" : "s"} your ${rm(s.bal)} can really buy`;
+  $("big").textContent = rm(real);
+  $("nominal").textContent = rm(nom);
+  $("lost").textContent = rm(lost);
+  $("real").textContent = (rr >= 0 ? "+" : "") + rr.toFixed(2) + "%";
+  $("even").textContent = "above " + s.infl + "%";
+  const pr = nom > 0 ? (real / nom) * 100 : 100;
+  $("splitA").style.cssText = `width:${Math.min(100, pr)}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${Math.max(0, 100 - pr)}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "r", values: yrs.map(realAt) }, { kind: "line-n", values: yrs.map(nomAt) }], "r");
+  window.__copy = `My ${rm(s.bal)} at ${s.rate}% with ${s.infl}% inflation: in ${s.years} years it shows ${rm(nom)} but buys only ${rm(real)} in today's money. (Ringgit in Motion real-return calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("real-return.html", "Real Return Calculator · Ringgit in Motion", "What your savings can really buy after inflation, in Malaysian ringgit.", real_body, real_js)
