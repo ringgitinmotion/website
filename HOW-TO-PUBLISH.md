@@ -11,6 +11,7 @@ Live address: **https://ringgitinmotion.github.io/website/**
 | 50/30/20 budget | JOM | https://ringgitinmotion.github.io/website/budget.html |
 | Compound calculator | GROW | https://ringgitinmotion.github.io/website/compound.html |
 | Real return (inflation) | MONEY | https://ringgitinmotion.github.io/website/real-return.html |
+| Debt payoff | LOAN | https://ringgitinmotion.github.io/website/debt.html |
 
 ## One-time setup (already done once Pages is switched on)
 

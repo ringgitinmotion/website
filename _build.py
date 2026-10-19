@@ -9,6 +9,7 @@ PAGES = [
     ("budget.html", "50/30/20", "JOM"),
     ("compound.html", "Compound", "GROW"),
     ("real-return.html", "Real return", "MONEY"),
+    ("debt.html", "Debt", "LOAN"),
 ]
 
 
@@ -100,6 +101,7 @@ tiles = [
     ("budget.html", "JOM", "50/30/20 budget", "Split your take-home pay into needs, wants and savings."),
     ("compound.html", "GROW", "Compound calculator", "Watch a monthly amount grow over the years, and see what waiting costs."),
     ("real-return.html", "MONEY", "Real return", "What your savings can really buy after inflation."),
+    ("debt.html", "LOAN", "Debt payoff", "How long your debt takes to clear, what it costs, and how much paying a bit more saves."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -310,3 +312,82 @@ RIM.form("rim-real", { bal: 10000, rate: 0.25, infl: 1.9, years: 10 }, { bal: [0
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("real-return.html", "Real Return Calculator · Ringgit in Motion", "What your savings can really buy after inflation, in Malaysian ringgit.", real_body, real_js)
+
+# ---------------------------------------------------------------- debt payoff
+debt_body = mast("Debt payoff · comment LOAN", "how long until you’re debt-free?", "Debt <span>Payoff</span>") + """
+<section class="tool" aria-label="Debt payoff calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("bal", "Amount you owe (RM)", 5000, 500, 50000, 100, 0, 10000000),
+    field("rate", "Interest rate (% a year)", 18, 0, 30, 0.1, 0, 60, "Malaysian credit cards charge 15–18% a year, depending on your repayment record."),
+    field("pay", "You pay each month (RM)", 250, 50, 3000, 10, 0, 10000000, "Paying only the minimum keeps you in debt far longer."),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("RM5,000 at 18%, paying RM250 a month, is cleared in", "24 months", [
+    ("Total interest", "interest", True), ("Total you pay back", "total", False),
+    ("Interest share of what you pay", "share", False)],
+    '<span><b style="background: var(--brand-ink)"></b>What you borrowed</span><span><b style="background: var(--gold-fill)"></b>Interest</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Balance over time"></svg>
+      <figcaption>Your balance month by month until it reaches zero.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Pay a bit more">
+  <h2>What if you pay a bit more?</h2>
+  <div class="field" style="max-width: 520px;">
+    <div class="row"><label for="extra">Extra each month (RM)</label><input class="num" id="extra" type="number" min="0" max="1000000" step="10" value="100" inputmode="decimal"></div>
+    <input id="extraR" type="range" min="0" max="1000" step="10" value="100" aria-label="Extra payment slider">
+  </div>
+  <p class="out" id="extraOut"></p>
+</section>"""
+debt_js = r"""
+const { $, rm } = RIM;
+// month-by-month payoff: interest is added, then the payment comes off
+const payoff = (bal, apr, pay) => {
+  const r = apr / 1200;
+  if (pay <= bal * r + 0.005) return null; // payment doesn't even cover the interest
+  let b = bal, months = 0, interest = 0;
+  const path = [b];
+  while (b > 0.005 && months < 1200) {
+    const i = b * r;
+    interest += i;
+    b = Math.max(0, b + i - pay);
+    months++;
+    path.push(b);
+  }
+  return { months, interest, total: bal + interest, path };
+};
+const span = (m) => {
+  const y = Math.floor(m / 12), mo = m % 12;
+  return [y ? `${y} year${y === 1 ? "" : "s"}` : "", mo ? `${mo} month${mo === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") || "0 months";
+};
+RIM.form("rim-debt", { bal: 5000, rate: 18, pay: 250, extra: 100 }, { bal: [0, 10000000], rate: [0, 60], pay: [0, 10000000], extra: [0, 1000000] }, (s) => {
+  const p = payoff(s.bal, s.rate, s.pay);
+  $("lead").textContent = `${rm(s.bal)} at ${s.rate}%, paying ${rm(s.pay)} a month, is cleared in`;
+  if (!p) {
+    const need = (s.bal * s.rate) / 1200;
+    $("big").textContent = "Never";
+    $("interest").textContent = `${rm(need)}+ a month`;
+    $("total").textContent = "keeps growing";
+    $("share").textContent = "-";
+    $("splitA").style.cssText = "width:0"; $("splitB").style.cssText = "width:100%;background:var(--gold-fill)"; $("splitC").style.width = "0";
+    $("chart").innerHTML = "";
+    $("extraOut").innerHTML = `Your payment doesn’t cover the monthly interest of about <strong>${rm(need)}</strong>, so the debt never shrinks. Pay more than that, or ask your bank about a lower-rate option.`;
+    window.__copy = `My ${rm(s.bal)} debt at ${s.rate}% never shrinks if I pay ${rm(s.pay)} a month. (Ringgit in Motion debt calculator)`;
+    return;
+  }
+  $("big").textContent = span(p.months);
+  $("interest").textContent = rm(p.interest);
+  $("total").textContent = rm(p.total);
+  $("share").textContent = Math.round((p.interest / p.total) * 100) + "%";
+  const pp = (s.bal / p.total) * 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  RIM.chart($("chart"), p.months, [{ kind: "area-v", key: "b", values: p.path }], "b", "MO");
+  const q = payoff(s.bal, s.rate, s.pay + s.extra);
+  $("extraOut").innerHTML = s.extra <= 0 || !q ? "Add an extra amount to see how much sooner you’d be debt-free."
+    : `Paying <strong>${rm(s.pay + s.extra)}</strong> a month clears it in ${span(q.months)}: <strong>${span(p.months - q.months)}</strong> sooner, and <strong>${rm(p.interest - q.interest)}</strong> less interest.`;
+  window.__copy = `My ${rm(s.bal)} debt at ${s.rate}%, paying ${rm(s.pay)} a month: debt-free in ${span(p.months)}, ${rm(p.interest)} in interest. (Ringgit in Motion debt calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("debt.html", "Debt Payoff Calculator · Ringgit in Motion", "How long your debt takes to clear, what it costs in interest, and how much paying a bit more saves.", debt_body, debt_js)

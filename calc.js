@@ -78,7 +78,7 @@
    * Chart over years. series: [{kind: "area-v"|"area-p"|"line-v"|"line-n", values: [...per year]}]
    * The last series' end value gets a dot and a label.
    */
-  RIM.chart = (svg, years, series, endKey) => {
+  RIM.chart = (svg, years, series, endKey, unit = "YR") => {
     const W = 640, H = 280, L = 62, Rr = 96, T = 16, B = 30;
     const all = series.flatMap((s) => s.values);
     const maxV = Math.max(1, ...all);
@@ -92,8 +92,10 @@
       s += `<line class="gridline" x1="${L}" x2="${W - Rr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/>`;
       s += `<text class="tick" x="${L - 8}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${RIM.rmShort(v)}</text>`;
     }
-    const xStep = years <= 10 ? 2 : years <= 25 ? 5 : 10;
-    for (let y = 0; y <= years; y += xStep) s += `<text class="tick" x="${X(y).toFixed(1)}" y="${H - 10}" text-anchor="middle">${y === 0 ? "YR 0" : y}</text>`;
+    const xStep = unit === "MO"
+      ? (years <= 24 ? 6 : years <= 60 ? 12 : years <= 120 ? 24 : 60)
+      : (years <= 10 ? 2 : years <= 25 ? 5 : 10);
+    for (let y = 0; y <= years; y += xStep) s += `<text class="tick" x="${X(y).toFixed(1)}" y="${H - 10}" text-anchor="middle">${y === 0 ? unit + " 0" : y}</text>`;
     series.forEach((ser) => {
       const pts = ser.values.map((v, y) => `${X(y).toFixed(1)} ${Y(v).toFixed(1)}`);
       if (ser.kind.startsWith("area")) s += `<path class="${ser.kind}" d="M ${X(0)} ${Y(0)} L ${pts.join(" L ")} L ${X(years)} ${Y(0)} Z"/>`;

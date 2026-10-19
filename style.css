@@ -136,6 +136,7 @@ footer { max-width: 1040px; margin: 40px auto 0; border-top: 1.5px dashed var(--
 .tagline { font: italic 420 clamp(24px, 4vw, 36px)/1.15 var(--serif); margin: 10px 0 0; }
 .grid4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 680px) { .grid4 { grid-template-columns: minmax(0, 1fr); } }
+.grid4 > .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .tile {
   display: grid; gap: 10px; text-decoration: none; padding: 22px; border-radius: 18px;
   background: var(--surface); border: 1.5px solid var(--line); transition: transform .15s, border-color .15s;

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debt Payoff Calculator · Ringgit in Motion</title>
+<meta name="description" content="How long your debt takes to clear, what it costs in interest, and how much paying a bit more saves.">
+<meta property="og:title" content="Debt Payoff Calculator · Ringgit in Motion">
+<meta property="og:description" content="How long your debt takes to clear, what it costs in interest, and how much paying a bit more saves.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html" aria-current="page">Debt</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Debt payoff · comment LOAN</div>
+  <p class="q">how long until you’re debt-free?</p>
+  <h1>Debt <span>Payoff</span></h1>
+</section>
+<section class="tool" aria-label="Debt payoff calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="bal">Amount you owe (RM)</label><input class="num" id="bal" type="number" min="0" max="10000000" step="100" value="5000" inputmode="decimal"></div>
+      <input id="balR" type="range" min="500" max="50000" step="100" value="5000" aria-label="Amount you owe (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="rate">Interest rate (% a year)</label><input class="num" id="rate" type="number" min="0" max="60" step="0.1" value="18" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="0" max="30" step="0.1" value="18" aria-label="Interest rate (% a year) slider">
+      <span class="hint">Malaysian credit cards charge 15–18% a year, depending on your repayment record.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="pay">You pay each month (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="10" value="250" inputmode="decimal"></div>
+      <input id="payR" type="range" min="50" max="3000" step="10" value="250" aria-label="You pay each month (RM) slider">
+      <span class="hint">Paying only the minimum keeps you in debt far longer.</span>
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">RM5,000 at 18%, paying RM250 a month, is cleared in</p>
+    <p class="big" id="big">24 months</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>What you borrowed</span><span><b style="background: var(--gold-fill)"></b>Interest</span></div>
+    <dl class="lines">
+      <div class="gold"><dt>Total interest</dt><dd id="interest">-</dd></div>
+      <div><dt>Total you pay back</dt><dd id="total">-</dd></div>
+      <div><dt>Interest share of what you pay</dt><dd id="share">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Balance over time"></svg>
+      <figcaption>Your balance month by month until it reaches zero.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Pay a bit more">
+  <h2>What if you pay a bit more?</h2>
+  <div class="field" style="max-width: 520px;">
+    <div class="row"><label for="extra">Extra each month (RM)</label><input class="num" id="extra" type="number" min="0" max="1000000" step="10" value="100" inputmode="decimal"></div>
+    <input id="extraR" type="range" min="0" max="1000" step="10" value="100" aria-label="Extra payment slider">
+  </div>
+  <p class="out" id="extraOut"></p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+// month-by-month payoff: interest is added, then the payment comes off
+const payoff = (bal, apr, pay) => {
+  const r = apr / 1200;
+  if (pay <= bal * r + 0.005) return null; // payment doesn't even cover the interest
+  let b = bal, months = 0, interest = 0;
+  const path = [b];
+  while (b > 0.005 && months < 1200) {
+    const i = b * r;
+    interest += i;
+    b = Math.max(0, b + i - pay);
+    months++;
+    path.push(b);
+  }
+  return { months, interest, total: bal + interest, path };
+};
+const span = (m) => {
+  const y = Math.floor(m / 12), mo = m % 12;
+  return [y ? `${y} year${y === 1 ? "" : "s"}` : "", mo ? `${mo} month${mo === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") || "0 months";
+};
+RIM.form("rim-debt", { bal: 5000, rate: 18, pay: 250, extra: 100 }, { bal: [0, 10000000], rate: [0, 60], pay: [0, 10000000], extra: [0, 1000000] }, (s) => {
+  const p = payoff(s.bal, s.rate, s.pay);
+  $("lead").textContent = `${rm(s.bal)} at ${s.rate}%, paying ${rm(s.pay)} a month, is cleared in`;
+  if (!p) {
+    const need = (s.bal * s.rate) / 1200;
+    $("big").textContent = "Never";
+    $("interest").textContent = `${rm(need)}+ a month`;
+    $("total").textContent = "keeps growing";
+    $("share").textContent = "-";
+    $("splitA").style.cssText = "width:0"; $("splitB").style.cssText = "width:100%;background:var(--gold-fill)"; $("splitC").style.width = "0";
+    $("chart").innerHTML = "";
+    $("extraOut").innerHTML = `Your payment doesn’t cover the monthly interest of about <strong>${rm(need)}</strong>, so the debt never shrinks. Pay more than that, or ask your bank about a lower-rate option.`;
+    window.__copy = `My ${rm(s.bal)} debt at ${s.rate}% never shrinks if I pay ${rm(s.pay)} a month. (Ringgit in Motion debt calculator)`;
+    return;
+  }
+  $("big").textContent = span(p.months);
+  $("interest").textContent = rm(p.interest);
+  $("total").textContent = rm(p.total);
+  $("share").textContent = Math.round((p.interest / p.total) * 100) + "%";
+  const pp = (s.bal / p.total) * 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  RIM.chart($("chart"), p.months, [{ kind: "area-v", key: "b", values: p.path }], "b", "MO");
+  const q = payoff(s.bal, s.rate, s.pay + s.extra);
+  $("extraOut").innerHTML = s.extra <= 0 || !q ? "Add an extra amount to see how much sooner you’d be debt-free."
+    : `Paying <strong>${rm(s.pay + s.extra)}</strong> a month clears it in ${span(q.months)}: <strong>${span(p.months - q.months)}</strong> sooner, and <strong>${rm(p.interest - q.interest)}</strong> less interest.`;
+  window.__copy = `My ${rm(s.bal)} debt at ${s.rate}%, paying ${rm(s.pay)} a month: debt-free in ${span(p.months)}, ${rm(p.interest)} in interest. (Ringgit in Motion debt calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>
