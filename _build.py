@@ -11,6 +11,7 @@ PAGES = [
     ("real-return.html", "Real return", "MONEY"),
     ("debt.html", "Debt", "LOAN"),
     ("emergency.html", "Emergency", "COVER"),
+    ("raise.html", "Raise", "MORE"),
 ]
 
 
@@ -104,6 +105,7 @@ tiles = [
     ("real-return.html", "MONEY", "Real return", "What your savings can really buy after inflation."),
     ("debt.html", "LOAN", "Debt payoff", "How long your debt takes to clear, what it costs, and how much paying a bit more saves."),
     ("emergency.html", "COVER", "Emergency fund", "Your 3 to 6 month safety net: how much you need and when you’ll get there."),
+    ("raise.html", "MORE", "Raise calculator", "Got a raise? See what saving part of it grows into, before lifestyle creep eats it."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -456,3 +458,57 @@ RIM.form("rim-emergency", { rent: 1200, food: 800, trans: 400, bills: 600, other
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("emergency.html", "Emergency Fund Calculator · Ringgit in Motion", "How big your emergency fund should be (3 to 6 months of essentials) and when you will reach it.", ef_body, ef_js)
+
+# ---------------------------------------------------------------- raise
+raise_body = mast("Raise calculator · comment MORE", "got a raise? don’t let it disappear.", "Raise <span>Calculator</span>") + """
+<section class="tool" aria-label="Raise calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("pay", "Take-home pay before the raise (RM)", 4000, 1000, 20000, 50, 0, 10000000),
+    field("raise", "Raise a month, take-home (RM)", 1000, 50, 5000, 50, 0, 10000000, "The extra that actually lands in your account."),
+    field("pct", "Share of the raise you save (%)", 50, 0, 100, 5, 0, 100, "Half is a good rule: you still enjoy the other half."),
+    '    <div class="divider"></div>',
+    field("rate", "Yearly return (%)", 6, 0, 12, 0.1, 0, 20, "An assumption. Real returns go up and down."),
+    field("years", "Years", 10, 1, 40, 1, 1, 60),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("Save RM500 a month of your raise for 10 years at 6%, and it grows to", "RM81,940", [
+    ("New take-home pay", "newpay", False), ("Extra to enjoy each month", "enjoy", False),
+    ("Extra to save each month", "keep", True), ("You put in", "paid", False), ("Growth on top", "growth", True)],
+    '<span><b style="background: var(--brand-ink)"></b>You put in</span><span><b style="background: var(--gold-fill)"></b>Growth</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Growth of the saved part of the raise"></svg>
+      <figcaption>The lilac area is the part of your raise you saved. The gold above it is growth.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Compare">
+  <h2>Three ways to use the same raise</h2>
+  <p class="out" id="cmpOut"></p>
+</section>"""
+raise_js = r"""
+const { $, rm, fv } = RIM;
+RIM.form("rim-raise", { pay: 4000, raise: 1000, pct: 50, rate: 6, years: 10 },
+  { pay: [0, 10000000], raise: [0, 10000000], pct: [0, 100], rate: [0, 20], years: [1, 60] }, (s) => {
+  const keep = (s.raise * s.pct) / 100, enjoy = s.raise - keep, n = s.years * 12;
+  const total = fv(keep, s.rate, n), paid = keep * n;
+  $("lead").textContent = `Save ${rm(keep)} a month of your raise for ${s.years} year${s.years === 1 ? "" : "s"} at ${s.rate}%, and it grows to`;
+  $("big").textContent = rm(total);
+  $("newpay").textContent = rm(s.pay + s.raise);
+  $("enjoy").textContent = rm(enjoy);
+  $("keep").textContent = rm(keep);
+  $("paid").textContent = rm(paid);
+  $("growth").textContent = rm(Math.max(0, total - paid));
+  const pp = total > 0 ? (paid / total) * 100 : 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => fv(keep, s.rate, 12 * y)), p = yrs.map((y) => keep * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  $("cmpOut").innerHTML =
+    `Spend all of it (lifestyle creep): <strong>RM0</strong> extra saved. ` +
+    `Save half: <strong>${rm(fv(s.raise / 2, s.rate, n))}</strong>. ` +
+    `Save all of it: <strong>${rm(fv(s.raise, s.rate, n))}</strong>, in ${s.years} years.`;
+  window.__copy = `Saving ${rm(keep)} a month of my ${rm(s.raise)} raise grows to about ${rm(total)} in ${s.years} years at ${s.rate}%. (Ringgit in Motion raise calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("raise.html", "Raise Calculator · Ringgit in Motion", "Got a raise? See what saving part of it grows into, before lifestyle creep spends it.", raise_body, raise_js)

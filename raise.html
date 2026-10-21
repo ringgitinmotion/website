@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raise Calculator · Ringgit in Motion</title>
+<meta name="description" content="Got a raise? See what saving part of it grows into, before lifestyle creep spends it.">
+<meta property="og:title" content="Raise Calculator · Ringgit in Motion">
+<meta property="og:description" content="Got a raise? See what saving part of it grows into, before lifestyle creep spends it.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html">Emergency</a><a href="raise.html" aria-current="page">Raise</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Raise calculator · comment MORE</div>
+  <p class="q">got a raise? don’t let it disappear.</p>
+  <h1>Raise <span>Calculator</span></h1>
+</section>
+<section class="tool" aria-label="Raise calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="pay">Take-home pay before the raise (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="50" value="4000" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1000" max="20000" step="50" value="4000" aria-label="Take-home pay before the raise (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="raise">Raise a month, take-home (RM)</label><input class="num" id="raise" type="number" min="0" max="10000000" step="50" value="1000" inputmode="decimal"></div>
+      <input id="raiseR" type="range" min="50" max="5000" step="50" value="1000" aria-label="Raise a month, take-home (RM) slider">
+      <span class="hint">The extra that actually lands in your account.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="pct">Share of the raise you save (%)</label><input class="num" id="pct" type="number" min="0" max="100" step="5" value="50" inputmode="decimal"></div>
+      <input id="pctR" type="range" min="0" max="100" step="5" value="50" aria-label="Share of the raise you save (%) slider">
+      <span class="hint">Half is a good rule: you still enjoy the other half.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="rate">Yearly return (%)</label><input class="num" id="rate" type="number" min="0" max="20" step="0.1" value="6" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="0" max="12" step="0.1" value="6" aria-label="Yearly return (%) slider">
+      <span class="hint">An assumption. Real returns go up and down.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="years">Years</label><input class="num" id="years" type="number" min="1" max="60" step="1" value="10" inputmode="decimal"></div>
+      <input id="yearsR" type="range" min="1" max="40" step="1" value="10" aria-label="Years slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">Save RM500 a month of your raise for 10 years at 6%, and it grows to</p>
+    <p class="big" id="big">RM81,940</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>You put in</span><span><b style="background: var(--gold-fill)"></b>Growth</span></div>
+    <dl class="lines">
+      <div><dt>New take-home pay</dt><dd id="newpay">-</dd></div>
+      <div><dt>Extra to enjoy each month</dt><dd id="enjoy">-</dd></div>
+      <div class="gold"><dt>Extra to save each month</dt><dd id="keep">-</dd></div>
+      <div><dt>You put in</dt><dd id="paid">-</dd></div>
+      <div class="gold"><dt>Growth on top</dt><dd id="growth">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Growth of the saved part of the raise"></svg>
+      <figcaption>The lilac area is the part of your raise you saved. The gold above it is growth.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Compare">
+  <h2>Three ways to use the same raise</h2>
+  <p class="out" id="cmpOut"></p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm, fv } = RIM;
+RIM.form("rim-raise", { pay: 4000, raise: 1000, pct: 50, rate: 6, years: 10 },
+  { pay: [0, 10000000], raise: [0, 10000000], pct: [0, 100], rate: [0, 20], years: [1, 60] }, (s) => {
+  const keep = (s.raise * s.pct) / 100, enjoy = s.raise - keep, n = s.years * 12;
+  const total = fv(keep, s.rate, n), paid = keep * n;
+  $("lead").textContent = `Save ${rm(keep)} a month of your raise for ${s.years} year${s.years === 1 ? "" : "s"} at ${s.rate}%, and it grows to`;
+  $("big").textContent = rm(total);
+  $("newpay").textContent = rm(s.pay + s.raise);
+  $("enjoy").textContent = rm(enjoy);
+  $("keep").textContent = rm(keep);
+  $("paid").textContent = rm(paid);
+  $("growth").textContent = rm(Math.max(0, total - paid));
+  const pp = total > 0 ? (paid / total) * 100 : 100;
+  $("splitA").style.cssText = `width:${pp}%;background:var(--brand-ink)`; $("splitB").style.cssText = `width:${100 - pp}%;background:var(--gold-fill)`; $("splitC").style.width = "0";
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => fv(keep, s.rate, 12 * y)), p = yrs.map((y) => keep * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  $("cmpOut").innerHTML =
+    `Spend all of it (lifestyle creep): <strong>RM0</strong> extra saved. ` +
+    `Save half: <strong>${rm(fv(s.raise / 2, s.rate, n))}</strong>. ` +
+    `Save all of it: <strong>${rm(fv(s.raise, s.rate, n))}</strong>, in ${s.years} years.`;
+  window.__copy = `Saving ${rm(keep)} a month of my ${rm(s.raise)} raise grows to about ${rm(total)} in ${s.years} years at ${s.rate}%. (Ringgit in Motion raise calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

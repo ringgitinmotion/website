@@ -83,7 +83,7 @@
     const all = series.flatMap((s) => s.values);
     const maxV = Math.max(1, ...all);
     const mag = Math.pow(10, Math.floor(Math.log10(maxV)));
-    const step = [1, 2, 2.5, 5, 10].map((s) => (s * mag) / 10).find((s) => maxV / s <= 5) || mag;
+    const step = [1, 2, 2.5, 5, 10, 20, 25, 50].map((s) => (s * mag) / 10).find((s) => maxV / s <= 5) || mag;
     const yMax = Math.ceil(maxV / step) * step;
     const X = (y) => L + (y / Math.max(1, years)) * (W - L - Rr);
     const Y = (v) => T + (1 - v / yMax) * (H - T - B);

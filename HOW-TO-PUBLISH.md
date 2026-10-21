@@ -13,6 +13,7 @@ Live address: **https://ringgitinmotion.github.io/website/**
 | Real return (inflation) | MONEY | https://ringgitinmotion.github.io/website/real-return.html |
 | Debt payoff | LOAN | https://ringgitinmotion.github.io/website/debt.html |
 | Emergency fund | COVER | https://ringgitinmotion.github.io/website/emergency.html |
+| Raise calculator | MORE | https://ringgitinmotion.github.io/website/raise.html |
 
 ## One-time setup (already done once Pages is switched on)
 
