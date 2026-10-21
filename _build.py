@@ -10,6 +10,7 @@ PAGES = [
     ("compound.html", "Compound", "GROW"),
     ("real-return.html", "Real return", "MONEY"),
     ("debt.html", "Debt", "LOAN"),
+    ("emergency.html", "Emergency", "COVER"),
 ]
 
 
@@ -102,6 +103,7 @@ tiles = [
     ("compound.html", "GROW", "Compound calculator", "Watch a monthly amount grow over the years, and see what waiting costs."),
     ("real-return.html", "MONEY", "Real return", "What your savings can really buy after inflation."),
     ("debt.html", "LOAN", "Debt payoff", "How long your debt takes to clear, what it costs, and how much paying a bit more saves."),
+    ("emergency.html", "COVER", "Emergency fund", "Your 3 to 6 month safety net: how much you need and when you’ll get there."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -391,3 +393,66 @@ RIM.form("rim-debt", { bal: 5000, rate: 18, pay: 250, extra: 100 }, { bal: [0, 1
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("debt.html", "Debt Payoff Calculator · Ringgit in Motion", "How long your debt takes to clear, what it costs in interest, and how much paying a bit more saves.", debt_body, debt_js)
+
+# ---------------------------------------------------------------- emergency fund
+ef_body = mast("Emergency fund · comment COVER", "how big should your safety net be?", "Emergency <span>Fund</span>") + """
+<section class="tool" aria-label="Emergency fund calculator">
+  <form class="controls" autocomplete="off">
+    <p class="hint">Your must-pays each month. Leave out shopping, eating out and holidays.</p>
+""" + "\n".join([
+    field("rent", "Rent or home loan (RM)", 1200, 0, 5000, 50, 0, 1000000),
+    field("food", "Groceries and meals (RM)", 800, 0, 3000, 50, 0, 1000000),
+    field("trans", "Transport (RM)", 400, 0, 2000, 50, 0, 1000000, "Petrol, toll, parking, LRT, car loan."),
+    field("bills", "Bills and insurance (RM)", 600, 0, 3000, 50, 0, 1000000, "Utilities, phone, internet, insurance, other loan repayments."),
+    field("other", "Anything else you must pay (RM)", 0, 0, 3000, 50, 0, 1000000, "For example, support for parents or childcare."),
+    '    <div class="divider"></div>',
+    field("months", "Months to cover", 6, 3, 12, 1, 1, 24, "3 is the minimum. 6 is safer, especially if your income is irregular."),
+    field("saved", "Already saved (RM)", 2000, 0, 50000, 100, 0, 100000000),
+    field("monthly", "You can save each month (RM)", 500, 0, 3000, 50, 0, 1000000),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("Your RM3,000 of essentials × 6 months =", "RM18,000", [
+    ("You have now", "have", False), ("Still to save", "left", False),
+    ("3-month mark", "at3", True), ("Full goal reached", "atGoal", True)],
+    '<span><b style="background: var(--gold-fill)"></b>Saved</span><span><b style="background: rgba(255,243,224,.25)"></b>Still to save</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Savings path to the goal"></svg>
+      <figcaption>Your fund month by month until it reaches the goal, if you keep saving the same amount.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Where to keep it">
+  <h2>Where to keep it</h2>
+  <p class="out">Somewhere <strong>separate</strong> from your spending account, that you can reach <strong>within a day</strong>, and that’s protected (check for <strong>PIDM</strong> cover). Not in shares or crypto: the point is that it’s there when you need it.</p>
+  <p class="fine">Use it for real emergencies only: job loss, medical bills, urgent repairs. Then top it back up.</p>
+</section>"""
+ef_js = r"""
+const { $, rm } = RIM;
+const span = (m) => {
+  const y = Math.floor(m / 12), mo = m % 12;
+  return [y ? `${y} year${y === 1 ? "" : "s"}` : "", mo ? `${mo} month${mo === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") || "now";
+};
+const when = (have, need, monthly) => (have >= need ? "done ✓" : monthly <= 0 ? "set a monthly amount" : "in " + span(Math.ceil((need - have) / monthly)));
+RIM.form("rim-emergency", { rent: 1200, food: 800, trans: 400, bills: 600, other: 0, months: 6, saved: 2000, monthly: 500 },
+  { rent: [0, 1000000], food: [0, 1000000], trans: [0, 1000000], bills: [0, 1000000], other: [0, 1000000], months: [1, 24], saved: [0, 100000000], monthly: [0, 1000000] }, (s) => {
+  const ess = s.rent + s.food + s.trans + s.bills + s.other;
+  const goal = ess * s.months, three = ess * 3;
+  $("lead").textContent = `Your ${rm(ess)} of essentials × ${s.months} month${s.months === 1 ? "" : "s"} =`;
+  $("big").textContent = rm(goal);
+  const pct = goal > 0 ? Math.min(100, (s.saved / goal) * 100) : 100;
+  $("have").textContent = `${rm(s.saved)} (${Math.round(pct)}%)`;
+  $("left").textContent = rm(Math.max(0, goal - s.saved));
+  $("at3").textContent = `${rm(three)}: ${when(s.saved, three, s.monthly)}`;
+  $("atGoal").textContent = when(s.saved, goal, s.monthly);
+  $("splitA").style.cssText = `width:${pct}%;background:var(--gold-fill)`; $("splitB").style.cssText = `width:${100 - pct}%;background:rgba(255,243,224,.25)`; $("splitC").style.width = "0";
+  if (goal > 0 && s.monthly > 0 && s.saved < goal) {
+    const n = Math.ceil((goal - s.saved) / s.monthly);
+    const vals = [...Array(n + 1)].map((_, m) => Math.min(goal, s.saved + s.monthly * m));
+    RIM.chart($("chart"), n, [{ kind: "area-v", key: "f", values: vals }], "f", "MO");
+  } else {
+    $("chart").innerHTML = "";
+  }
+  window.__copy = `My emergency fund goal: ${rm(goal)} (${s.months} months of ${rm(ess)}). Saving ${rm(s.monthly)} a month, I get there ${when(s.saved, goal, s.monthly)}. (Ringgit in Motion emergency fund calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("emergency.html", "Emergency Fund Calculator · Ringgit in Motion", "How big your emergency fund should be (3 to 6 months of essentials) and when you will reach it.", ef_body, ef_js)

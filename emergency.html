@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emergency Fund Calculator · Ringgit in Motion</title>
+<meta name="description" content="How big your emergency fund should be (3 to 6 months of essentials) and when you will reach it.">
+<meta property="og:title" content="Emergency Fund Calculator · Ringgit in Motion">
+<meta property="og:description" content="How big your emergency fund should be (3 to 6 months of essentials) and when you will reach it.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html" aria-current="page">Emergency</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Emergency fund · comment COVER</div>
+  <p class="q">how big should your safety net be?</p>
+  <h1>Emergency <span>Fund</span></h1>
+</section>
+<section class="tool" aria-label="Emergency fund calculator">
+  <form class="controls" autocomplete="off">
+    <p class="hint">Your must-pays each month. Leave out shopping, eating out and holidays.</p>
+    <div class="field">
+      <div class="row"><label for="rent">Rent or home loan (RM)</label><input class="num" id="rent" type="number" min="0" max="1000000" step="50" value="1200" inputmode="decimal"></div>
+      <input id="rentR" type="range" min="0" max="5000" step="50" value="1200" aria-label="Rent or home loan (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="food">Groceries and meals (RM)</label><input class="num" id="food" type="number" min="0" max="1000000" step="50" value="800" inputmode="decimal"></div>
+      <input id="foodR" type="range" min="0" max="3000" step="50" value="800" aria-label="Groceries and meals (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="trans">Transport (RM)</label><input class="num" id="trans" type="number" min="0" max="1000000" step="50" value="400" inputmode="decimal"></div>
+      <input id="transR" type="range" min="0" max="2000" step="50" value="400" aria-label="Transport (RM) slider">
+      <span class="hint">Petrol, toll, parking, LRT, car loan.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="bills">Bills and insurance (RM)</label><input class="num" id="bills" type="number" min="0" max="1000000" step="50" value="600" inputmode="decimal"></div>
+      <input id="billsR" type="range" min="0" max="3000" step="50" value="600" aria-label="Bills and insurance (RM) slider">
+      <span class="hint">Utilities, phone, internet, insurance, other loan repayments.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="other">Anything else you must pay (RM)</label><input class="num" id="other" type="number" min="0" max="1000000" step="50" value="0" inputmode="decimal"></div>
+      <input id="otherR" type="range" min="0" max="3000" step="50" value="0" aria-label="Anything else you must pay (RM) slider">
+      <span class="hint">For example, support for parents or childcare.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="months">Months to cover</label><input class="num" id="months" type="number" min="1" max="24" step="1" value="6" inputmode="decimal"></div>
+      <input id="monthsR" type="range" min="3" max="12" step="1" value="6" aria-label="Months to cover slider">
+      <span class="hint">3 is the minimum. 6 is safer, especially if your income is irregular.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="saved">Already saved (RM)</label><input class="num" id="saved" type="number" min="0" max="100000000" step="100" value="2000" inputmode="decimal"></div>
+      <input id="savedR" type="range" min="0" max="50000" step="100" value="2000" aria-label="Already saved (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="monthly">You can save each month (RM)</label><input class="num" id="monthly" type="number" min="0" max="1000000" step="50" value="500" inputmode="decimal"></div>
+      <input id="monthlyR" type="range" min="0" max="3000" step="50" value="500" aria-label="You can save each month (RM) slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">Your RM3,000 of essentials × 6 months =</p>
+    <p class="big" id="big">RM18,000</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--gold-fill)"></b>Saved</span><span><b style="background: rgba(255,243,224,.25)"></b>Still to save</span></div>
+    <dl class="lines">
+      <div><dt>You have now</dt><dd id="have">-</dd></div>
+      <div><dt>Still to save</dt><dd id="left">-</dd></div>
+      <div class="gold"><dt>3-month mark</dt><dd id="at3">-</dd></div>
+      <div class="gold"><dt>Full goal reached</dt><dd id="atGoal">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="Savings path to the goal"></svg>
+      <figcaption>Your fund month by month until it reaches the goal, if you keep saving the same amount.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Where to keep it">
+  <h2>Where to keep it</h2>
+  <p class="out">Somewhere <strong>separate</strong> from your spending account, that you can reach <strong>within a day</strong>, and that’s protected (check for <strong>PIDM</strong> cover). Not in shares or crypto: the point is that it’s there when you need it.</p>
+  <p class="fine">Use it for real emergencies only: job loss, medical bills, urgent repairs. Then top it back up.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+const span = (m) => {
+  const y = Math.floor(m / 12), mo = m % 12;
+  return [y ? `${y} year${y === 1 ? "" : "s"}` : "", mo ? `${mo} month${mo === 1 ? "" : "s"}` : ""].filter(Boolean).join(" ") || "now";
+};
+const when = (have, need, monthly) => (have >= need ? "done ✓" : monthly <= 0 ? "set a monthly amount" : "in " + span(Math.ceil((need - have) / monthly)));
+RIM.form("rim-emergency", { rent: 1200, food: 800, trans: 400, bills: 600, other: 0, months: 6, saved: 2000, monthly: 500 },
+  { rent: [0, 1000000], food: [0, 1000000], trans: [0, 1000000], bills: [0, 1000000], other: [0, 1000000], months: [1, 24], saved: [0, 100000000], monthly: [0, 1000000] }, (s) => {
+  const ess = s.rent + s.food + s.trans + s.bills + s.other;
+  const goal = ess * s.months, three = ess * 3;
+  $("lead").textContent = `Your ${rm(ess)} of essentials × ${s.months} month${s.months === 1 ? "" : "s"} =`;
+  $("big").textContent = rm(goal);
+  const pct = goal > 0 ? Math.min(100, (s.saved / goal) * 100) : 100;
+  $("have").textContent = `${rm(s.saved)} (${Math.round(pct)}%)`;
+  $("left").textContent = rm(Math.max(0, goal - s.saved));
+  $("at3").textContent = `${rm(three)}: ${when(s.saved, three, s.monthly)}`;
+  $("atGoal").textContent = when(s.saved, goal, s.monthly);
+  $("splitA").style.cssText = `width:${pct}%;background:var(--gold-fill)`; $("splitB").style.cssText = `width:${100 - pct}%;background:rgba(255,243,224,.25)`; $("splitC").style.width = "0";
+  if (goal > 0 && s.monthly > 0 && s.saved < goal) {
+    const n = Math.ceil((goal - s.saved) / s.monthly);
+    const vals = [...Array(n + 1)].map((_, m) => Math.min(goal, s.saved + s.monthly * m));
+    RIM.chart($("chart"), n, [{ kind: "area-v", key: "f", values: vals }], "f", "MO");
+  } else {
+    $("chart").innerHTML = "";
+  }
+  window.__copy = `My emergency fund goal: ${rm(goal)} (${s.months} months of ${rm(ess)}). Saving ${rm(s.monthly)} a month, I get there ${when(s.saved, goal, s.monthly)}. (Ringgit in Motion emergency fund calculator)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>
