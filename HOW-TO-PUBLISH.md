@@ -14,6 +14,7 @@ Live address: **https://ringgitinmotion.github.io/website/**
 | Debt payoff | LOAN | https://ringgitinmotion.github.io/website/debt.html |
 | Emergency fund | COVER | https://ringgitinmotion.github.io/website/emergency.html |
 | Raise calculator | MORE | https://ringgitinmotion.github.io/website/raise.html |
+| EPF calculator | BONUS | https://ringgitinmotion.github.io/website/epf.html |
 
 ## One-time setup (already done once Pages is switched on)
 

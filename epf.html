@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPF Calculator · Ringgit in Motion</title>
+<meta name="description" content="What you and your employer put into EPF (KWSP) each month, how it splits into 3 accounts, and what it could grow to.">
+<meta property="og:title" content="EPF Calculator · Ringgit in Motion">
+<meta property="og:description" content="What you and your employer put into EPF (KWSP) each month, how it splits into 3 accounts, and what it could grow to.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html">Emergency</a><a href="raise.html">Raise</a><a href="epf.html" aria-current="page">EPF</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">EPF calculator · comment BONUS</div>
+  <p class="q">that EPF cut on your payslip? it’s a pay rise.</p>
+  <h1>EPF <span>Calculator</span></h1>
+</section>
+<section class="tool" aria-label="EPF calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="pay">Monthly salary (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="50" value="3000" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1500" max="20000" step="50" value="3000" aria-label="Monthly salary (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="you">Your share (%)</label><input class="num" id="you" type="number" min="0" max="50" step="0.5" value="11" inputmode="decimal"></div>
+      <input id="youR" type="range" min="0" max="20" step="0.5" value="11" aria-label="Your share (%) slider">
+      <span class="hint">Most employees under 60 pay 11%.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="boss">Employer’s share (%)</label><input class="num" id="boss" type="number" min="0" max="50" step="0.5" value="13" inputmode="decimal"></div>
+      <input id="bossR" type="range" min="0" max="20" step="0.5" value="13" aria-label="Employer’s share (%) slider">
+      <span class="hint">13% if your pay is RM5,000 or less, 12% above that.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="bal">EPF balance today (RM)</label><input class="num" id="bal" type="number" min="0" max="100000000" step="1000" value="0" inputmode="decimal"></div>
+      <input id="balR" type="range" min="0" max="500000" step="1000" value="0" aria-label="EPF balance today (RM) slider">
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="rate">Yearly dividend (%)</label><input class="num" id="rate" type="number" min="0" max="20" step="0.05" value="5.5" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="0" max="10" step="0.05" value="5.5" aria-label="Yearly dividend (%) slider">
+      <span class="hint">An assumption. EPF paid 5.2% to 6.9% a year over the last 10 years (6.15% for 2025).</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="years">Years</label><input class="num" id="years" type="number" min="1" max="60" step="1" value="30" inputmode="decimal"></div>
+      <input id="yearsR" type="range" min="1" max="45" step="1" value="30" aria-label="Years slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">RM720 a month into EPF for 30 years at 5.5% grows to</p>
+    <p class="big" id="big">RM641,466</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--brand-ink)"></b>You</span><span><b style="background: rgba(255,243,224,.55)"></b>Employer</span><span><b style="background: var(--gold-fill)"></b>Dividends</span></div>
+    <dl class="lines">
+      <div><dt>You put in a month</dt><dd id="youM">-</dd></div>
+      <div class="gold"><dt>Your employer adds</dt><dd id="bossM">-</dd></div>
+      <div><dt>Akaun Persaraan (75%, locked till 55)</dt><dd id="a1">-</dd></div>
+      <div><dt>Akaun Sejahtera (15%)</dt><dd id="a2">-</dd></div>
+      <div><dt>Akaun Fleksibel (10%)</dt><dd id="a3">-</dd></div>
+      <div><dt>You put in, in total</dt><dd id="youT">-</dd></div>
+      <div class="gold"><dt>Employer put in, in total</dt><dd id="bossT">-</dd></div>
+      <div class="gold"><dt>Dividends on top</dt><dd id="div">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="EPF balance over the years"></svg>
+      <figcaption>The lilac area is what you and your employer paid in (plus today’s balance). The gold above it is dividends.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Akaun Fleksibel">
+  <h2>Leave Akaun Fleksibel alone?</h2>
+  <p class="out" id="cmpOut"></p>
+  <p class="fine">Since May 2024, new contributions split 75% / 15% / 10% into Akaun Persaraan, Sejahtera and Fleksibel, and all three earn the same dividend. Dividends are compounded here as a steady yearly rate; real EPF dividends change every year. Education only, not financial advice.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+// EPF credits a yearly dividend, so use the monthly rate that compounds to exactly that yearly rate
+const fvEff = (m, b0, pct, n) => {
+  const r = Math.pow(1 + pct / 100, 1 / 12) - 1;
+  const g = Math.pow(1 + r, n);
+  return b0 * g + (r === 0 ? m * n : (m * (g - 1)) / r);
+};
+RIM.form("rim-epf", { pay: 3000, you: 11, boss: 13, bal: 0, rate: 5.5, years: 30 },
+  { pay: [0, 10000000], you: [0, 50], boss: [0, 50], bal: [0, 100000000], rate: [0, 20], years: [1, 60] }, (s) => {
+  const youM = (s.pay * s.you) / 100, bossM = (s.pay * s.boss) / 100, m = youM + bossM, n = s.years * 12;
+  const total = fvEff(m, s.bal, s.rate, n);
+  const youT = youM * n, bossT = bossM * n, div = Math.max(0, total - youT - bossT - s.bal);
+  $("lead").textContent = `${rm(m)} a month into EPF for ${s.years} year${s.years === 1 ? "" : "s"} at ${s.rate}% grows to`;
+  $("big").textContent = rm(total);
+  $("youM").textContent = rm(youM); $("bossM").textContent = rm(bossM);
+  $("a1").textContent = rm(m * 0.75) + " a month"; $("a2").textContent = rm(m * 0.15) + " a month"; $("a3").textContent = rm(m * 0.1) + " a month";
+  $("youT").textContent = rm(youT); $("bossT").textContent = rm(bossT); $("div").textContent = rm(div);
+  const pct = (v) => (total > 0 ? (v / total) * 100 : 0);
+  $("splitA").style.cssText = `width:${pct(youT + s.bal)}%;background:var(--brand-ink)`;
+  $("splitB").style.cssText = `width:${pct(bossT)}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = `width:${pct(div)}%;background:var(--gold-fill)`;
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => fvEff(m, s.bal, s.rate, 12 * y)), p = yrs.map((y) => s.bal + m * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  $("cmpOut").innerHTML =
+    `Your Akaun Fleksibel gets <strong>${rm(m * 0.1)}</strong> a month. Leave it for ${s.years} years and it grows to ` +
+    `<strong>${rm(fvEff(m * 0.1, 0, s.rate, n))}</strong>. Withdraw it every month and that part of your retirement is <strong>RM0</strong>.`;
+  window.__copy = `${rm(m)} a month into my EPF (${rm(bossM)} of it from my employer) could grow to about ${rm(total)} in ${s.years} years at ${s.rate}%. (Ringgit in Motion EPF calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

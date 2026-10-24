@@ -12,6 +12,7 @@ PAGES = [
     ("debt.html", "Debt", "LOAN"),
     ("emergency.html", "Emergency", "COVER"),
     ("raise.html", "Raise", "MORE"),
+    ("epf.html", "EPF", "BONUS"),
 ]
 
 
@@ -106,6 +107,7 @@ tiles = [
     ("debt.html", "LOAN", "Debt payoff", "How long your debt takes to clear, what it costs, and how much paying a bit more saves."),
     ("emergency.html", "COVER", "Emergency fund", "Your 3 to 6 month safety net: how much you need and when you’ll get there."),
     ("raise.html", "MORE", "Raise calculator", "Got a raise? See what saving part of it grows into, before lifestyle creep eats it."),
+    ("epf.html", "BONUS", "EPF calculator", "What you and your boss put into KWSP each month, the 3 accounts, and what it grows to."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -512,3 +514,66 @@ RIM.form("rim-raise", { pay: 4000, raise: 1000, pct: 50, rate: 6, years: 10 },
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("raise.html", "Raise Calculator · Ringgit in Motion", "Got a raise? See what saving part of it grows into, before lifestyle creep spends it.", raise_body, raise_js)
+
+# ---------------------------------------------------------------- epf
+epf_body = mast("EPF calculator · comment BONUS", "that EPF cut on your payslip? it’s a pay rise.", "EPF <span>Calculator</span>") + """
+<section class="tool" aria-label="EPF calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("pay", "Monthly salary (RM)", 3000, 1500, 20000, 50, 0, 10000000),
+    field("you", "Your share (%)", 11, 0, 20, 0.5, 0, 50, "Most employees under 60 pay 11%."),
+    field("boss", "Employer’s share (%)", 13, 0, 20, 0.5, 0, 50, "13% if your pay is RM5,000 or less, 12% above that."),
+    field("bal", "EPF balance today (RM)", 0, 0, 500000, 1000, 0, 100000000),
+    '    <div class="divider"></div>',
+    field("rate", "Yearly dividend (%)", 5.5, 0, 10, 0.05, 0, 20, "An assumption. EPF paid 5.2% to 6.9% a year over the last 10 years (6.15% for 2025)."),
+    field("years", "Years", 30, 1, 45, 1, 1, 60),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("RM720 a month into EPF for 30 years at 5.5% grows to", "RM641,466", [
+    ("You put in a month", "youM", False), ("Your employer adds", "bossM", True),
+    ("Akaun Persaraan (75%, locked till 55)", "a1", False), ("Akaun Sejahtera (15%)", "a2", False), ("Akaun Fleksibel (10%)", "a3", False),
+    ("You put in, in total", "youT", False), ("Employer put in, in total", "bossT", True), ("Dividends on top", "div", True)],
+    '<span><b style="background: var(--brand-ink)"></b>You</span><span><b style="background: rgba(255,243,224,.55)"></b>Employer</span><span><b style="background: var(--gold-fill)"></b>Dividends</span>') + """
+    <figure><svg class="chart" id="chart" viewBox="0 0 640 280" role="img" aria-label="EPF balance over the years"></svg>
+      <figcaption>The lilac area is what you and your employer paid in (plus today’s balance). The gold above it is dividends.</figcaption></figure>
+  </div>
+</section>
+<section class="mid" aria-label="Akaun Fleksibel">
+  <h2>Leave Akaun Fleksibel alone?</h2>
+  <p class="out" id="cmpOut"></p>
+  <p class="fine">Since May 2024, new contributions split 75% / 15% / 10% into Akaun Persaraan, Sejahtera and Fleksibel, and all three earn the same dividend. Dividends are compounded here as a steady yearly rate; real EPF dividends change every year. Education only, not financial advice.</p>
+</section>"""
+epf_js = r"""
+const { $, rm } = RIM;
+// EPF credits a yearly dividend, so use the monthly rate that compounds to exactly that yearly rate
+const fvEff = (m, b0, pct, n) => {
+  const r = Math.pow(1 + pct / 100, 1 / 12) - 1;
+  const g = Math.pow(1 + r, n);
+  return b0 * g + (r === 0 ? m * n : (m * (g - 1)) / r);
+};
+RIM.form("rim-epf", { pay: 3000, you: 11, boss: 13, bal: 0, rate: 5.5, years: 30 },
+  { pay: [0, 10000000], you: [0, 50], boss: [0, 50], bal: [0, 100000000], rate: [0, 20], years: [1, 60] }, (s) => {
+  const youM = (s.pay * s.you) / 100, bossM = (s.pay * s.boss) / 100, m = youM + bossM, n = s.years * 12;
+  const total = fvEff(m, s.bal, s.rate, n);
+  const youT = youM * n, bossT = bossM * n, div = Math.max(0, total - youT - bossT - s.bal);
+  $("lead").textContent = `${rm(m)} a month into EPF for ${s.years} year${s.years === 1 ? "" : "s"} at ${s.rate}% grows to`;
+  $("big").textContent = rm(total);
+  $("youM").textContent = rm(youM); $("bossM").textContent = rm(bossM);
+  $("a1").textContent = rm(m * 0.75) + " a month"; $("a2").textContent = rm(m * 0.15) + " a month"; $("a3").textContent = rm(m * 0.1) + " a month";
+  $("youT").textContent = rm(youT); $("bossT").textContent = rm(bossT); $("div").textContent = rm(div);
+  const pct = (v) => (total > 0 ? (v / total) * 100 : 0);
+  $("splitA").style.cssText = `width:${pct(youT + s.bal)}%;background:var(--brand-ink)`;
+  $("splitB").style.cssText = `width:${pct(bossT)}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = `width:${pct(div)}%;background:var(--gold-fill)`;
+  const yrs = [...Array(s.years + 1)].map((_, y) => y);
+  const v = yrs.map((y) => fvEff(m, s.bal, s.rate, 12 * y)), p = yrs.map((y) => s.bal + m * 12 * y);
+  RIM.chart($("chart"), s.years, [{ kind: "area-v", key: "v", values: v }, { kind: "area-p", values: p }, { kind: "line-v", key: "v", values: v }], "v");
+  $("cmpOut").innerHTML =
+    `Your Akaun Fleksibel gets <strong>${rm(m * 0.1)}</strong> a month. Leave it for ${s.years} years and it grows to ` +
+    `<strong>${rm(fvEff(m * 0.1, 0, s.rate, n))}</strong>. Withdraw it every month and that part of your retirement is <strong>RM0</strong>.`;
+  window.__copy = `${rm(m)} a month into my EPF (${rm(bossM)} of it from my employer) could grow to about ${rm(total)} in ${s.years} years at ${s.rate}%. (Ringgit in Motion EPF calculator, illustration only)`;
+});
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("epf.html", "EPF Calculator · Ringgit in Motion", "What you and your employer put into EPF (KWSP) each month, how it splits into 3 accounts, and what it could grow to.", epf_body, epf_js)
