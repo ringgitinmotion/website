@@ -13,6 +13,7 @@ PAGES = [
     ("emergency.html", "Emergency", "COVER"),
     ("raise.html", "Raise", "MORE"),
     ("epf.html", "EPF", "BONUS"),
+    ("park.html", "Park cash", "POCKET"),
 ]
 
 
@@ -108,6 +109,7 @@ tiles = [
     ("emergency.html", "COVER", "Emergency fund", "Your 3 to 6 month safety net: how much you need and when you’ll get there."),
     ("raise.html", "MORE", "Raise calculator", "Got a raise? See what saving part of it grows into, before lifestyle creep eats it."),
     ("epf.html", "BONUS", "EPF calculator", "What you and your boss put into KWSP each month, the 3 accounts, and what it grows to."),
+    ("park.html", "POCKET", "Park your cash", "Savings account, fixed deposit or ASB: what the same money earns in each, and the catches."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -577,3 +579,69 @@ RIM.form("rim-epf", { pay: 3000, you: 11, boss: 13, bal: 0, rate: 5.5, years: 30
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("epf.html", "EPF Calculator · Ringgit in Motion", "What you and your employer put into EPF (KWSP) each month, how it splits into 3 accounts, and what it could grow to.", epf_body, epf_js)
+
+# ---------------------------------------------------------------- park your cash
+park_body = mast("Park your cash · comment POCKET", "savings, FD or ASB: does it matter where cash sits?", "Park your <span>Cash</span>") + """
+<section class="tool" aria-label="Park your cash calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("amt", "Amount (RM)", 20000, 1000, 300000, 500, 0, 100000000),
+    field("months", "Months you leave it", 12, 1, 12, 1, 1, 12, "Fixed deposit here is a 12-month one. Take it out before 12 months and many banks pay no interest."),
+    '    <div class="divider"></div>',
+    field("sav", "Savings account (% a year)", 0.25, 0, 4, 0.05, 0, 20, "Basic savings at the big banks pay about 0.15% to 0.25%."),
+    field("fd", "12-month fixed deposit (% a year)", 1.9, 0, 5, 0.05, 0, 20, "Board rate at Maybank, CIMB and RHB: 1.90% (ABM, 15 Aug 2026). Promotions pay more, with a minimum and an end date."),
+    field("asb", "ASB or ASM payout (% a year)", 5.75, 0, 8, 0.05, 0, 20, "ASB paid 5.75 sen per RM1 unit for 2025. ASM paid 5.00 sen, ASM 3 4.75 sen. Not fixed, not guaranteed."),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("RM20,000 for 12 months earns, at best,", "RM1,150", [
+    ("Savings account", "eS", False), ("12-month fixed deposit", "eF", False), ("ASB / ASM (if the payout holds)", "eA", True),
+    ("Extra vs the savings account", "gap", True), ("Protected by PIDM?", "pidm", False)],
+    '<span><b style="background: rgba(255,243,224,.55)"></b>Savings</span><span><b style="background: var(--brand-ink)"></b>Fixed deposit</span><span><b style="background: var(--gold-fill)"></b>ASB / ASM</span>') + """
+  </div>
+</section>
+<section class="mid" aria-label="ASB lowest balance">
+  <h2>The ASB lowest-balance catch</h2>
+  <p>ASB and ASM pay on your <em>lowest</em> balance in each month. Take money out for even one day and that month only counts what was left.</p>
+  <form class="controls" autocomplete="off">
+""" + field("dip", "Taken out for a day (RM)", 5000, 0, 50000, 500, 0, 100000000) + """
+  </form>
+  <p class="out" id="dipOut"></p>
+  <p class="fine">Illustration only. Savings and fixed deposit interest is shown as simple yearly interest; ASB/ASM is shown as the yearly payout rate on money kept in for whole months. Bank deposits are protected by PIDM up to RM250,000 per depositor per member bank (Islamic and conventional separately). ASB and ASM are unit trusts: not PIDM-protected and not guaranteed. ASB is mainly for Bumiputera; ASM funds are open to all Malaysians when units are available. Rates change. Education only, not financial advice.</p>
+</section>"""
+park_js = r"""
+const { $, rm } = RIM;
+let rate = 5.75;
+RIM.form("rim-park", { amt: 20000, months: 12, sav: 0.25, fd: 1.9, asb: 5.75 },
+  { amt: [0, 100000000], months: [1, 12], sav: [0, 20], fd: [0, 20], asb: [0, 20] }, (s) => {
+  const part = s.months / 12;
+  const eS = s.amt * (s.sav / 100) * part;
+  const eF = s.months >= 12 ? s.amt * (s.fd / 100) : 0;
+  const eA = s.amt * (s.asb / 100) * part;
+  const best = Math.max(eS, eF, eA);
+  rate = s.asb;
+  $("lead").textContent = `${rm(s.amt)} for ${s.months} month${s.months === 1 ? "" : "s"} earns, at best,`;
+  $("big").textContent = rm(best);
+  $("eS").textContent = rm(eS);
+  $("eF").textContent = s.months >= 12 ? rm(eF) : "RM0 (broken early)";
+  $("eA").textContent = rm(eA);
+  $("gap").textContent = "+" + rm(Math.max(0, best - eS));
+  $("pidm").textContent = s.amt > 250000 ? "Bank deposits: up to RM250,000 per bank. ASB: no" : "Savings and FD: yes. ASB: no";
+  const tot = eS + eF + eA;
+  const pct = (v) => (tot > 0 ? (v / tot) * 100 : 0);
+  $("splitA").style.cssText = `width:${pct(eS)}%;background:rgba(255,243,224,.55)`;
+  $("splitB").style.cssText = `width:${pct(eF)}%;background:var(--brand-ink)`;
+  $("splitC").style.cssText = `width:${pct(eA)}%;background:var(--gold-fill)`;
+  window.__copy = `${rm(s.amt)} for ${s.months} months: savings ${rm(eS)}, fixed deposit ${s.months >= 12 ? rm(eF) : "RM0 (broken early)"}, ASB/ASM about ${rm(eA)} if the payout holds. (Ringgit in Motion park-your-cash calculator, illustration only)`;
+  dipRender();
+});
+function dipRender() {
+  const d = parseFloat($("dip").value) || 0;
+  $("dipOut").innerHTML = `Take out <strong>${rm(d)}</strong> for one day and that month earns on ${rm(d)} less: about <strong>${rm((d * rate) / 100 / 12)}</strong> gone at ${rate}% a year. Money you put in mid-month only starts counting the month after.`;
+}
+const syncDip = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; dipRender(); });
+syncDip("dip", "dipR"); syncDip("dipR", "dip");
+dipRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("park.html", "Park Your Cash Calculator · Ringgit in Motion", "Savings account vs fixed deposit vs ASB in Malaysia: what the same money earns in each, PIDM cover, and the catches.", park_body, park_js)
