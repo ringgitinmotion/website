@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BNPL Calculator · Ringgit in Motion</title>
+<meta name="description" content="Buy now, pay later in Malaysia: add up your plans, see the share of your pay, and what a monthly fee costs as a yearly rate.">
+<meta property="og:title" content="BNPL Calculator · Ringgit in Motion">
+<meta property="og:description" content="Buy now, pay later in Malaysia: add up your plans, see the share of your pay, and what a monthly fee costs as a yearly rate.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html">Emergency</a><a href="raise.html">Raise</a><a href="epf.html">EPF</a><a href="park.html">Park cash</a><a href="bnpl.html" aria-current="page">BNPL</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">BNPL calculator · comment TOTAL</div>
+  <p class="q">split in 3, every buy feels small. then they stack.</p>
+  <h1>BNPL <span>Total</span></h1>
+</section>
+<section class="tool" aria-label="Buy now pay later calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="pay">Take-home pay a month (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="50" value="3500" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1000" max="20000" step="50" value="3500" aria-label="Take-home pay a month (RM) slider">
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="p1">Plan 1: monthly instalment (RM)</label><input class="num" id="p1" type="number" min="0" max="1000000" step="10" value="120" inputmode="decimal"></div>
+      <input id="p1R" type="range" min="0" max="1000" step="10" value="120" aria-label="Plan 1: monthly instalment (RM) slider">
+      <span class="hint">Example: RM360 sneakers in 3.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="p2">Plan 2: monthly instalment (RM)</label><input class="num" id="p2" type="number" min="0" max="1000000" step="10" value="150" inputmode="decimal"></div>
+      <input id="p2R" type="range" min="0" max="1000" step="10" value="150" aria-label="Plan 2: monthly instalment (RM) slider">
+      <span class="hint">Example: RM450 earbuds in 3.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="p3">Plan 3: monthly instalment (RM)</label><input class="num" id="p3" type="number" min="0" max="1000000" step="10" value="150" inputmode="decimal"></div>
+      <input id="p3R" type="range" min="0" max="1000" step="10" value="150" aria-label="Plan 3: monthly instalment (RM) slider">
+      <span class="hint">Example: RM900 flight in 6.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="p4">Plan 4: monthly instalment (RM)</label><input class="num" id="p4" type="number" min="0" max="1000000" step="10" value="80" inputmode="decimal"></div>
+      <input id="p4R" type="range" min="0" max="1000" step="10" value="80" aria-label="Plan 4: monthly instalment (RM) slider">
+      <span class="hint">Example: RM240 groceries in 3.</span>
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">Your BNPL plans take, every month,</p>
+    <p class="big" id="big">RM500</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--gold-fill)"></b>BNPL plans</span><span><b style="background: rgba(255,243,224,.55)"></b>Rest of your pay</span></div>
+    <dl class="lines">
+      <div class="gold"><dt>Share of your take-home pay</dt><dd id="share">-</dd></div>
+      <div><dt>10% guide (our rule of thumb)</dt><dd id="guide">-</dd></div>
+      <div class="gold"><dt>Over or under the guide</dt><dd id="gap">-</dd></div>
+      <div><dt>Pay left after the plans</dt><dd id="left">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+  </div>
+</section>
+<section class="mid" aria-label="Fee check">
+  <h2>Is your plan really 0%?</h2>
+  <p>Some plans add a monthly fee on the full price. See what it adds up to, and what it means as a yearly loan rate.</p>
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="price">Price (RM)</label><input class="num" id="price" type="number" min="0" max="100000000" step="50" value="1200" inputmode="decimal"></div>
+      <input id="priceR" type="range" min="50" max="10000" step="50" value="1200" aria-label="Price (RM) slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="months">Months</label><input class="num" id="months" type="number" min="1" max="60" step="1" value="6" inputmode="decimal"></div>
+      <input id="monthsR" type="range" min="1" max="24" step="1" value="6" aria-label="Months slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="fee">Fee (% a month, on the full price)</label><input class="num" id="fee" type="number" min="0" max="20" step="0.05" value="1.5" inputmode="decimal"></div>
+      <input id="feeR" type="range" min="0" max="5" step="0.05" value="1.5" aria-label="Fee (% a month, on the full price) slider">
+      <span class="hint">Check the fee table shown at checkout. 0 for a true 0% plan.</span>
+    </div>
+  </form>
+  <p class="out" id="feeOut"></p>
+  <p class="fine">Illustration only: the plans and fee are examples, not any provider's actual rates. The yearly rate is the loan rate (APR) that gives the same payments. Late charges are not included. Since 1 March 2026, BNPL providers in Malaysia fall under the Consumer Credit Act 2025 and the Consumer Credit Commission. Education only, not financial advice.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+RIM.form("rim-bnpl", { pay: 3500, p1: 120, p2: 150, p3: 150, p4: 80 },
+  { pay: [0, 10000000], p1: [0, 1000000], p2: [0, 1000000], p3: [0, 1000000], p4: [0, 1000000] }, (s) => {
+  const tot = s.p1 + s.p2 + s.p3 + s.p4;
+  const share = s.pay > 0 ? (tot / s.pay) * 100 : 0;
+  const guide = s.pay * 0.1;
+  $("big").textContent = rm(tot);
+  $("share").textContent = share.toFixed(1) + "%";
+  $("guide").textContent = rm(guide) + " a month";
+  $("gap").textContent = tot > guide ? rm(tot - guide) + " over" : rm(guide - tot) + " under";
+  $("left").textContent = rm(Math.max(0, s.pay - tot));
+  const pa = Math.min(100, share);
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `My BNPL plans take ${rm(tot)} a month: ${share.toFixed(1)}% of my take-home pay. (Ringgit in Motion BNPL calculator)`;
+});
+// monthly rate r where the payments are worth exactly the price today (bisection)
+function apr(price, pay, n) {
+  if (pay * n <= price + 1e-9) return 0;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 100; i++) {
+    const r = (lo + hi) / 2;
+    const pv = (pay * (1 - Math.pow(1 + r, -n))) / r;
+    if (pv > price) lo = r; else hi = r;
+  }
+  return ((lo + hi) / 2) * 12 * 100;
+}
+function feeRender() {
+  const price = parseFloat($("price").value) || 0, n = Math.max(1, Math.round(parseFloat($("months").value) || 1)), f = parseFloat($("fee").value) || 0;
+  const pay = price / n + (price * f) / 100;
+  const total = pay * n, extra = total - price, y = apr(price, pay, n);
+  $("feeOut").innerHTML = `${n} payments of <strong>${rm(pay)}</strong> = <strong>${rm(total)}</strong> in total: <strong>${rm(extra)}</strong> more than paying in full. ` +
+    (extra > 0 ? `As a loan, that is about <strong>${y.toFixed(0)}% a year</strong>.` : `A true 0% plan, as long as every payment is on time.`);
+}
+["price", "months", "fee"].forEach((id) => {
+  const sync = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; feeRender(); });
+  sync(id, id + "R"); sync(id + "R", id);
+});
+feeRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

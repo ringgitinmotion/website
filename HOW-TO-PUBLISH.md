@@ -16,6 +16,7 @@ Live address: **https://ringgitinmotion.github.io/website/**
 | Raise calculator | MORE | https://ringgitinmotion.github.io/website/raise.html |
 | EPF calculator | BONUS | https://ringgitinmotion.github.io/website/epf.html |
 | Park your cash | POCKET | https://ringgitinmotion.github.io/website/park.html |
+| BNPL calculator | TOTAL | https://ringgitinmotion.github.io/website/bnpl.html |
 
 ## One-time setup (already done once Pages is switched on)
 

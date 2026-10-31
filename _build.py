@@ -14,6 +14,7 @@ PAGES = [
     ("raise.html", "Raise", "MORE"),
     ("epf.html", "EPF", "BONUS"),
     ("park.html", "Park cash", "POCKET"),
+    ("bnpl.html", "BNPL", "TOTAL"),
 ]
 
 
@@ -110,6 +111,7 @@ tiles = [
     ("raise.html", "MORE", "Raise calculator", "Got a raise? See what saving part of it grows into, before lifestyle creep eats it."),
     ("epf.html", "BONUS", "EPF calculator", "What you and your boss put into KWSP each month, the 3 accounts, and what it grows to."),
     ("park.html", "POCKET", "Park your cash", "Savings account, fixed deposit or ASB: what the same money earns in each, and the catches."),
+    ("bnpl.html", "TOTAL", "BNPL calculator", "Add up every buy now, pay later plan, see the share of your pay, and what a monthly fee really costs."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -645,3 +647,81 @@ dipRender();
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("park.html", "Park Your Cash Calculator · Ringgit in Motion", "Savings account vs fixed deposit vs ASB in Malaysia: what the same money earns in each, PIDM cover, and the catches.", park_body, park_js)
+
+# ---------------------------------------------------------------- buy now, pay later
+bnpl_body = mast("BNPL calculator · comment TOTAL", "split in 3, every buy feels small. then they stack.", "BNPL <span>Total</span>") + """
+<section class="tool" aria-label="Buy now pay later calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("pay", "Take-home pay a month (RM)", 3500, 1000, 20000, 50, 0, 10000000),
+    '    <div class="divider"></div>',
+    field("p1", "Plan 1: monthly instalment (RM)", 120, 0, 1000, 10, 0, 1000000, "Example: RM360 sneakers in 3."),
+    field("p2", "Plan 2: monthly instalment (RM)", 150, 0, 1000, 10, 0, 1000000, "Example: RM450 earbuds in 3."),
+    field("p3", "Plan 3: monthly instalment (RM)", 150, 0, 1000, 10, 0, 1000000, "Example: RM900 flight in 6."),
+    field("p4", "Plan 4: monthly instalment (RM)", 80, 0, 1000, 10, 0, 1000000, "Example: RM240 groceries in 3."),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("Your BNPL plans take, every month,", "RM500", [
+    ("Share of your take-home pay", "share", True), ("10% guide (our rule of thumb)", "guide", False),
+    ("Over or under the guide", "gap", True), ("Pay left after the plans", "left", False)],
+    '<span><b style="background: var(--gold-fill)"></b>BNPL plans</span><span><b style="background: rgba(255,243,224,.55)"></b>Rest of your pay</span>') + """
+  </div>
+</section>
+<section class="mid" aria-label="Fee check">
+  <h2>Is your plan really 0%?</h2>
+  <p>Some plans add a monthly fee on the full price. See what it adds up to, and what it means as a yearly loan rate.</p>
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("price", "Price (RM)", 1200, 50, 10000, 50, 0, 100000000),
+    field("months", "Months", 6, 1, 24, 1, 1, 60),
+    field("fee", "Fee (% a month, on the full price)", 1.5, 0, 5, 0.05, 0, 20, "Check the fee table shown at checkout. 0 for a true 0% plan."),
+]) + """
+  </form>
+  <p class="out" id="feeOut"></p>
+  <p class="fine">Illustration only: the plans and fee are examples, not any provider's actual rates. The yearly rate is the loan rate (APR) that gives the same payments. Late charges are not included. Since 1 March 2026, BNPL providers in Malaysia fall under the Consumer Credit Act 2025 and the Consumer Credit Commission. Education only, not financial advice.</p>
+</section>"""
+bnpl_js = r"""
+const { $, rm } = RIM;
+RIM.form("rim-bnpl", { pay: 3500, p1: 120, p2: 150, p3: 150, p4: 80 },
+  { pay: [0, 10000000], p1: [0, 1000000], p2: [0, 1000000], p3: [0, 1000000], p4: [0, 1000000] }, (s) => {
+  const tot = s.p1 + s.p2 + s.p3 + s.p4;
+  const share = s.pay > 0 ? (tot / s.pay) * 100 : 0;
+  const guide = s.pay * 0.1;
+  $("big").textContent = rm(tot);
+  $("share").textContent = share.toFixed(1) + "%";
+  $("guide").textContent = rm(guide) + " a month";
+  $("gap").textContent = tot > guide ? rm(tot - guide) + " over" : rm(guide - tot) + " under";
+  $("left").textContent = rm(Math.max(0, s.pay - tot));
+  const pa = Math.min(100, share);
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `My BNPL plans take ${rm(tot)} a month: ${share.toFixed(1)}% of my take-home pay. (Ringgit in Motion BNPL calculator)`;
+});
+// monthly rate r where the payments are worth exactly the price today (bisection)
+function apr(price, pay, n) {
+  if (pay * n <= price + 1e-9) return 0;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 100; i++) {
+    const r = (lo + hi) / 2;
+    const pv = (pay * (1 - Math.pow(1 + r, -n))) / r;
+    if (pv > price) lo = r; else hi = r;
+  }
+  return ((lo + hi) / 2) * 12 * 100;
+}
+function feeRender() {
+  const price = parseFloat($("price").value) || 0, n = Math.max(1, Math.round(parseFloat($("months").value) || 1)), f = parseFloat($("fee").value) || 0;
+  const pay = price / n + (price * f) / 100;
+  const total = pay * n, extra = total - price, y = apr(price, pay, n);
+  $("feeOut").innerHTML = `${n} payments of <strong>${rm(pay)}</strong> = <strong>${rm(total)}</strong> in total: <strong>${rm(extra)}</strong> more than paying in full. ` +
+    (extra > 0 ? `As a loan, that is about <strong>${y.toFixed(0)}% a year</strong>.` : `A true 0% plan, as long as every payment is on time.`);
+}
+["price", "months", "fee"].forEach((id) => {
+  const sync = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; feeRender(); });
+  sync(id, id + "R"); sync(id + "R", id);
+});
+feeRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("bnpl.html", "BNPL Calculator · Ringgit in Motion", "Buy now, pay later in Malaysia: add up your plans, see the share of your pay, and what a monthly fee costs as a yearly rate.", bnpl_body, bnpl_js)
