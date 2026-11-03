@@ -15,6 +15,7 @@ PAGES = [
     ("epf.html", "EPF", "BONUS"),
     ("park.html", "Park cash", "POCKET"),
     ("bnpl.html", "BNPL", "TOTAL"),
+    ("hours.html", "Price in hours", "COOL"),
 ]
 
 
@@ -112,6 +113,7 @@ tiles = [
     ("epf.html", "BONUS", "EPF calculator", "What you and your boss put into KWSP each month, the 3 accounts, and what it grows to."),
     ("park.html", "POCKET", "Park your cash", "Savings account, fixed deposit or ASB: what the same money earns in each, and the catches."),
     ("bnpl.html", "TOTAL", "BNPL calculator", "Add up every buy now, pay later plan, see the share of your pay, and what a monthly fee really costs."),
+    ("hours.html", "COOL", "Price in hours", "Turn any price into hours of your work, check the cost per use, and see how small whims add up in a year."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -725,3 +727,75 @@ feeRender();
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("bnpl.html", "BNPL Calculator · Ringgit in Motion", "Buy now, pay later in Malaysia: add up your plans, see the share of your pay, and what a monthly fee costs as a yearly rate.", bnpl_body, bnpl_js)
+
+# ---------------------------------------------------------------- price in hours (24-hour rule)
+hours_body = mast("Price in hours · comment COOL", "that 11.11 deal feels urgent. it can wait till tomorrow.", "Price in <span>Hours</span>") + """
+<section class="tool" aria-label="Price in hours calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("pay", "Take-home pay a month (RM)", 2940, 1000, 20000, 10, 0, 10000000, "Example: RM2,940, Malaysia's median monthly pay (DOSM, 2025)."),
+    field("hrs", "Hours you work a month", 176, 40, 300, 1, 1, 744, "8 hours a day × 22 workdays = 176."),
+    '    <div class="divider"></div>',
+    field("price", "Price of the thing you want (RM)", 150, 10, 5000, 10, 0, 100000000),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("At your pay, that price costs", "9 hours", [
+    ("You earn, per hour", "rate", False), ("Workdays (8 hours each)", "days", True),
+    ("Share of a month's pay", "share", False), ("Suggested pause before buying", "wait", True)],
+    '<span><b style="background: var(--gold-fill)"></b>This buy</span><span><b style="background: rgba(255,243,224,.55)"></b>Rest of the month\'s pay</span>') + """
+  </div>
+</section>
+<section class="mid" aria-label="Cost per use and yearly total">
+  <h2>Cost per use, and what whims add up to</h2>
+  <p>Divide the price by how many times you will really use it. Then see what the same kind of buy costs if it happens every month.</p>
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("uses", "Times you will use it", 100, 1, 500, 1, 1, 100000),
+    field("per", "Buys like this a month", 2, 0, 20, 1, 0, 1000),
+    field("each", "Average price of each (RM)", 100, 10, 2000, 10, 0, 10000000),
+]) + """
+  </form>
+  <p class="out" id="useOut"></p>
+  <p class="fine">The pause is our rule of thumb: up to RM100, 24 hours; up to RM500, 72 hours; up to RM1,000, 7 days; above that, 30 days. Hours use your take-home pay and the hours you enter, so they are an estimate. Education only, not financial advice.</p>
+</section>"""
+hours_js = r"""
+const { $, rm } = RIM;
+const rm2 = (v) => "RM" + v.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const one = (v) => (Math.round(v * 10) / 10).toLocaleString("en-MY");
+let rate = 2940 / 176;
+const pause = (p) => (p <= 100 ? "24 hours" : p <= 500 ? "72 hours" : p <= 1000 ? "7 days" : "30 days");
+RIM.form("rim-hours", { pay: 2940, hrs: 176, price: 150 },
+  { pay: [0, 10000000], hrs: [1, 744], price: [0, 100000000] }, (s) => {
+  rate = s.hrs > 0 ? s.pay / s.hrs : 0;
+  const h = rate > 0 ? s.price / rate : 0;
+  const share = s.pay > 0 ? (s.price / s.pay) * 100 : 0;
+  $("big").textContent = one(h) + (Math.abs(h - 1) < 0.05 ? " hour" : " hours");
+  $("lead").textContent = "At your pay, " + rm(s.price) + " costs";
+  $("rate").textContent = rm2(rate);
+  $("days").textContent = one(h / 8);
+  $("share").textContent = share.toFixed(1) + "%";
+  $("wait").textContent = pause(s.price);
+  const pa = Math.min(100, share);
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `${rm(s.price)} costs me ${one(h)} hours of work (${one(h / 8)} workdays). I'll wait ${pause(s.price)} first. (Ringgit in Motion price-in-hours calculator)`;
+  useRender();
+});
+function useRender() {
+  const price = parseFloat($("price").value) || 0, uses = Math.max(1, parseFloat($("uses").value) || 1);
+  const per = parseFloat($("per").value) || 0, each = parseFloat($("each").value) || 0;
+  const year = per * each * 12, yh = rate > 0 ? year / rate : 0;
+  $("useOut").innerHTML = `Used ${uses.toLocaleString("en-MY")} times, ${rm(price)} works out to <strong>${rm2(price / uses)} per use</strong>. ` +
+    `${per} buys of ${rm(each)} a month add up to <strong>${rm(year)} a year</strong>: about <strong>${Math.round(yh).toLocaleString("en-MY")} hours</strong> of work (${one(yh / 8)} workdays).`;
+}
+["uses", "per", "each"].forEach((id) => {
+  const sync = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; useRender(); });
+  sync(id, id + "R"); sync(id + "R", id);
+});
+["price", "priceR", "pay", "payR", "hrs", "hrsR"].forEach((id) => $(id).addEventListener("input", useRender));
+useRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("hours.html", "Price in Hours Calculator · Ringgit in Motion", "Turn any price into hours of your work, check the cost per use, and see how small impulse buys add up in a year. Built around the 24-hour rule.", hours_body, hours_js)

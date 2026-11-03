@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Price in Hours Calculator · Ringgit in Motion</title>
+<meta name="description" content="Turn any price into hours of your work, check the cost per use, and see how small impulse buys add up in a year. Built around the 24-hour rule.">
+<meta property="og:title" content="Price in Hours Calculator · Ringgit in Motion">
+<meta property="og:description" content="Turn any price into hours of your work, check the cost per use, and see how small impulse buys add up in a year. Built around the 24-hour rule.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html">Emergency</a><a href="raise.html">Raise</a><a href="epf.html">EPF</a><a href="park.html">Park cash</a><a href="bnpl.html">BNPL</a><a href="hours.html" aria-current="page">Price in hours</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Price in hours · comment COOL</div>
+  <p class="q">that 11.11 deal feels urgent. it can wait till tomorrow.</p>
+  <h1>Price in <span>Hours</span></h1>
+</section>
+<section class="tool" aria-label="Price in hours calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="pay">Take-home pay a month (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="10" value="2940" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1000" max="20000" step="10" value="2940" aria-label="Take-home pay a month (RM) slider">
+      <span class="hint">Example: RM2,940, Malaysia's median monthly pay (DOSM, 2025).</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="hrs">Hours you work a month</label><input class="num" id="hrs" type="number" min="1" max="744" step="1" value="176" inputmode="decimal"></div>
+      <input id="hrsR" type="range" min="40" max="300" step="1" value="176" aria-label="Hours you work a month slider">
+      <span class="hint">8 hours a day × 22 workdays = 176.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="price">Price of the thing you want (RM)</label><input class="num" id="price" type="number" min="0" max="100000000" step="10" value="150" inputmode="decimal"></div>
+      <input id="priceR" type="range" min="10" max="5000" step="10" value="150" aria-label="Price of the thing you want (RM) slider">
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">At your pay, that price costs</p>
+    <p class="big" id="big">9 hours</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--gold-fill)"></b>This buy</span><span><b style="background: rgba(255,243,224,.55)"></b>Rest of the month's pay</span></div>
+    <dl class="lines">
+      <div><dt>You earn, per hour</dt><dd id="rate">-</dd></div>
+      <div class="gold"><dt>Workdays (8 hours each)</dt><dd id="days">-</dd></div>
+      <div><dt>Share of a month's pay</dt><dd id="share">-</dd></div>
+      <div class="gold"><dt>Suggested pause before buying</dt><dd id="wait">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+  </div>
+</section>
+<section class="mid" aria-label="Cost per use and yearly total">
+  <h2>Cost per use, and what whims add up to</h2>
+  <p>Divide the price by how many times you will really use it. Then see what the same kind of buy costs if it happens every month.</p>
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="uses">Times you will use it</label><input class="num" id="uses" type="number" min="1" max="100000" step="1" value="100" inputmode="decimal"></div>
+      <input id="usesR" type="range" min="1" max="500" step="1" value="100" aria-label="Times you will use it slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="per">Buys like this a month</label><input class="num" id="per" type="number" min="0" max="1000" step="1" value="2" inputmode="decimal"></div>
+      <input id="perR" type="range" min="0" max="20" step="1" value="2" aria-label="Buys like this a month slider">
+    </div>
+    <div class="field">
+      <div class="row"><label for="each">Average price of each (RM)</label><input class="num" id="each" type="number" min="0" max="10000000" step="10" value="100" inputmode="decimal"></div>
+      <input id="eachR" type="range" min="10" max="2000" step="10" value="100" aria-label="Average price of each (RM) slider">
+    </div>
+  </form>
+  <p class="out" id="useOut"></p>
+  <p class="fine">The pause is our rule of thumb: up to RM100, 24 hours; up to RM500, 72 hours; up to RM1,000, 7 days; above that, 30 days. Hours use your take-home pay and the hours you enter, so they are an estimate. Education only, not financial advice.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+const rm2 = (v) => "RM" + v.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const one = (v) => (Math.round(v * 10) / 10).toLocaleString("en-MY");
+let rate = 2940 / 176;
+const pause = (p) => (p <= 100 ? "24 hours" : p <= 500 ? "72 hours" : p <= 1000 ? "7 days" : "30 days");
+RIM.form("rim-hours", { pay: 2940, hrs: 176, price: 150 },
+  { pay: [0, 10000000], hrs: [1, 744], price: [0, 100000000] }, (s) => {
+  rate = s.hrs > 0 ? s.pay / s.hrs : 0;
+  const h = rate > 0 ? s.price / rate : 0;
+  const share = s.pay > 0 ? (s.price / s.pay) * 100 : 0;
+  $("big").textContent = one(h) + (Math.abs(h - 1) < 0.05 ? " hour" : " hours");
+  $("lead").textContent = "At your pay, " + rm(s.price) + " costs";
+  $("rate").textContent = rm2(rate);
+  $("days").textContent = one(h / 8);
+  $("share").textContent = share.toFixed(1) + "%";
+  $("wait").textContent = pause(s.price);
+  const pa = Math.min(100, share);
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `${rm(s.price)} costs me ${one(h)} hours of work (${one(h / 8)} workdays). I'll wait ${pause(s.price)} first. (Ringgit in Motion price-in-hours calculator)`;
+  useRender();
+});
+function useRender() {
+  const price = parseFloat($("price").value) || 0, uses = Math.max(1, parseFloat($("uses").value) || 1);
+  const per = parseFloat($("per").value) || 0, each = parseFloat($("each").value) || 0;
+  const year = per * each * 12, yh = rate > 0 ? year / rate : 0;
+  $("useOut").innerHTML = `Used ${uses.toLocaleString("en-MY")} times, ${rm(price)} works out to <strong>${rm2(price / uses)} per use</strong>. ` +
+    `${per} buys of ${rm(each)} a month add up to <strong>${rm(year)} a year</strong>: about <strong>${Math.round(yh).toLocaleString("en-MY")} hours</strong> of work (${one(yh / 8)} workdays).`;
+}
+["uses", "per", "each"].forEach((id) => {
+  const sync = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; useRender(); });
+  sync(id, id + "R"); sync(id + "R", id);
+});
+["price", "priceR", "pay", "payR", "hrs", "hrsR"].forEach((id) => $(id).addEventListener("input", useRender));
+useRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>
