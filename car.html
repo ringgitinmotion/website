@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car Loan Calculator · Ringgit in Motion</title>
+<meta name="description" content="Malaysia car loan reality check: turn a flat rate into the real EIR, see the monthly instalment, total interest and share of your pay, and compare 5, 7 and 9 year tenures.">
+<meta property="og:title" content="Car Loan Calculator · Ringgit in Motion">
+<meta property="og:description" content="Malaysia car loan reality check: turn a flat rate into the real EIR, see the monthly instalment, total interest and share of your pay, and compare 5, 7 and 9 year tenures.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Fraunces:ital,opsz,wght@1,9..144,420&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html"><img src="logo.png" alt=""><span>Ringgit <em>in motion</em></span></a>
+  <nav class="links" aria-label="Calculators"><a href="kopi.html">Kopi</a><a href="budget.html">50/30/20</a><a href="compound.html">Compound</a><a href="real-return.html">Real return</a><a href="debt.html">Debt</a><a href="emergency.html">Emergency</a><a href="raise.html">Raise</a><a href="epf.html">EPF</a><a href="park.html">Park cash</a><a href="bnpl.html">BNPL</a><a href="hours.html">Price in hours</a><a href="car.html" aria-current="page">Car loan</a></nav>
+</header>
+<main>
+<section class="mast">
+  <div class="eyebrow">Car loan calculator · comment ROAD</div>
+  <p class="q">a 3% flat car loan sounds cheap. the real rate is about 5.5%.</p>
+  <h1>Car loan <span>Reality</span></h1>
+</section>
+<section class="tool" aria-label="Car loan calculator">
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="loan">Loan amount (RM)</label><input class="num" id="loan" type="number" min="0" max="10000000" step="1000" value="100000" inputmode="decimal"></div>
+      <input id="loanR" type="range" min="10000" max="300000" step="1000" value="100000" aria-label="Loan amount (RM) slider">
+      <span class="hint">Car price minus your down payment (usually at least 10%).</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="years">Tenure (years)</label><input class="num" id="years" type="number" min="1" max="9" step="1" value="9" inputmode="decimal"></div>
+      <input id="yearsR" type="range" min="1" max="9" step="1" value="9" aria-label="Tenure (years) slider">
+      <span class="hint">Up to 9 years for most new cars.</span>
+    </div>
+    <div class="field">
+      <div class="row"><label for="flat">Flat rate quoted (% a year)</label><input class="num" id="flat" type="number" min="0" max="10" step="0.05" value="3" inputmode="decimal"></div>
+      <input id="flatR" type="range" min="0" max="10" step="0.05" value="3" aria-label="Flat rate quoted (% a year) slider">
+      <span class="hint">Old-style quote. New agreements under the 2026 rules quote the EIR instead.</span>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <div class="row"><label for="pay">Your take-home pay a month (RM)</label><input class="num" id="pay" type="number" min="0" max="10000000" step="50" value="2940" inputmode="decimal"></div>
+      <input id="payR" type="range" min="1000" max="20000" step="50" value="2940" aria-label="Your take-home pay a month (RM) slider">
+      <span class="hint">RM2,940 is Malaysia's median monthly pay (DOSM, 2025).</span>
+    </div>
+  </form>
+  <div class="stack">
+  <div class="card" aria-live="polite">
+    <p class="lead" id="lead">Your monthly instalment</p>
+    <p class="big" id="big">RM1,175.93</p>
+    <div class="split" aria-hidden="true"><i id="splitA"></i><i id="splitB"></i><i id="splitC"></i></div>
+    <div class="legend"><span><b style="background: var(--gold-fill)"></b>Loan</span><span><b style="background: rgba(255,243,224,.55)"></b>Interest</span></div>
+    <dl class="lines">
+      <div class="gold"><dt>Same loan as an EIR of</dt><dd id="eir">-</dd></div>
+      <div><dt>Total interest</dt><dd id="interest">-</dd></div>
+      <div><dt>Total you repay</dt><dd id="total">-</dd></div>
+      <div class="gold"><dt>Share of your take-home pay</dt><dd id="share">-</dd></div>
+    </dl>
+    <div class="actions">
+      <button type="button" id="copy">Copy my result</button>
+      <button type="button" class="ghost" id="reset">Reset example</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+  </div>
+  </div>
+</section>
+<section class="mid" aria-label="Compare tenures">
+  <h2>Got an EIR quote? Compare tenures</h2>
+  <p>Same loan amount as above. A longer tenure lowers the monthly instalment, but you pay more interest in total.</p>
+  <form class="controls" autocomplete="off">
+    <div class="field">
+      <div class="row"><label for="rate">EIR quoted (% a year)</label><input class="num" id="rate" type="number" min="0" max="17" step="0.05" value="5.5" inputmode="decimal"></div>
+      <input id="rateR" type="range" min="1" max="17" step="0.05" value="5.5" aria-label="EIR quoted (% a year) slider">
+      <span class="hint">The EIR is capped at 17% a year up to 5 years and 16% above 5 years for fixed-rate loans.</span>
+    </div>
+  </form>
+  <p class="out" id="tenOut"></p>
+  <p class="fine">Interest is worked out on the reducing balance with equal monthly instalments, the method the Hire-Purchase (Amendment) Act 2026 uses for new agreements from 1 June 2026. The flat-rate maths (interest on the full loan for every year) is how older agreements were quoted. Example from Bank Negara Malaysia: RM100,000 over 9 years at 3% flat or 5.5% EIR is RM1,175.93 a month and RM27,000 of interest. Insurance or takaful, road tax, servicing, petrol and late charges are not included. Your lender's figures may differ slightly through rounding and fees. Education only, not financial advice.</p>
+</section>
+</main>
+<footer>
+  <p class="fine">Ringgit in Motion makes money basics simple, with short animated posts on Instagram (@ringgitinmotion).</p>
+  <p class="fine">These calculators are illustrations for learning, not financial advice. They assume steady returns; real returns, fees, taxes and inflation vary. Nothing you type leaves your device.</p>
+</footer>
+<script src="calc.js"></script>
+<script>
+
+const { $, rm } = RIM;
+const rm2 = (v) => "RM" + v.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pmt = (P, eir, n) => { const i = eir / 100 / 12; return i === 0 ? P / n : (P * i) / (1 - Math.pow(1 + i, -n)); };
+function eirOf(P, m, n) {
+  if (m * n <= P + 1e-9) return 0;
+  let lo = 0, hi = 100;
+  for (let k = 0; k < 200; k++) { const mid = (lo + hi) / 2; if (pmt(P, mid, n) > m) hi = mid; else lo = mid; }
+  return (lo + hi) / 2;
+}
+let loanNow = 100000;
+RIM.form("rim-car", { loan: 100000, years: 9, flat: 3, pay: 2940 },
+  { loan: [0, 10000000], years: [1, 9], flat: [0, 10], pay: [0, 10000000] }, (s) => {
+  const n = Math.round(s.years) * 12;
+  const interest = s.loan * (s.flat / 100) * Math.round(s.years);
+  const total = s.loan + interest, m = n > 0 ? total / n : 0;
+  const e = eirOf(s.loan, m, n);
+  loanNow = s.loan;
+  $("big").textContent = rm2(m);
+  $("eir").textContent = e.toFixed(2) + "%";
+  $("interest").textContent = rm(interest);
+  $("total").textContent = rm(total);
+  $("share").textContent = s.pay > 0 ? ((m / s.pay) * 100).toFixed(1) + "%" : "-";
+  const pa = total > 0 ? (s.loan / total) * 100 : 100;
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `A ${rm(s.loan)} car loan at ${s.flat}% flat over ${Math.round(s.years)} years is really about ${e.toFixed(2)}% EIR: ${rm2(m)} a month and ${rm(interest)} of interest. (Ringgit in Motion car loan calculator)`;
+  tenRender();
+});
+function tenRender() {
+  const r = Math.min(17, Math.max(0, parseFloat($("rate").value) || 0));
+  const rows = [5, 7, 9].map((y) => { const m = pmt(loanNow, r, y * 12); return { y, m, i: m * y * 12 - loanNow }; });
+  $("tenOut").innerHTML = rows.map((x) => `<strong>${x.y} years</strong>: ${rm2(x.m)} a month, ${rm(x.i)} interest`).join("<br>") +
+    `<br>9 years instead of 5 costs <strong>${rm(rows[2].i - rows[0].i)}</strong> more in interest.`;
+}
+const syncT = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; tenRender(); });
+syncT("rate", "rateR"); syncT("rateR", "rate");
+tenRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+
+</script>
+</body>
+</html>

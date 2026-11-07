@@ -16,6 +16,7 @@ PAGES = [
     ("park.html", "Park cash", "POCKET"),
     ("bnpl.html", "BNPL", "TOTAL"),
     ("hours.html", "Price in hours", "COOL"),
+    ("car.html", "Car loan", "ROAD"),
 ]
 
 
@@ -114,6 +115,7 @@ tiles = [
     ("park.html", "POCKET", "Park your cash", "Savings account, fixed deposit or ASB: what the same money earns in each, and the catches."),
     ("bnpl.html", "TOTAL", "BNPL calculator", "Add up every buy now, pay later plan, see the share of your pay, and what a monthly fee really costs."),
     ("hours.html", "COOL", "Price in hours", "Turn any price into hours of your work, check the cost per use, and see how small whims add up in a year."),
+    ("car.html", "ROAD", "Car loan reality check", "Turn a flat rate into the real EIR, see the monthly instalment and total interest, and compare tenures."),
 ]
 home_body = """<section class="hero">
   <img src="logo.png" alt="Ringgit in Motion logo: a gold RM coin in motion">
@@ -799,3 +801,76 @@ useRender();
 $("copy").addEventListener("click", () => RIM.copy(window.__copy));
 """
 page("hours.html", "Price in Hours Calculator · Ringgit in Motion", "Turn any price into hours of your work, check the cost per use, and see how small impulse buys add up in a year. Built around the 24-hour rule.", hours_body, hours_js)
+
+# ---------------------------------------------------------------- car loan reality check (flat rate vs EIR)
+car_body = mast("Car loan calculator · comment ROAD", "a 3% flat car loan sounds cheap. the real rate is about 5.5%.", "Car loan <span>Reality</span>") + """
+<section class="tool" aria-label="Car loan calculator">
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("loan", "Loan amount (RM)", 100000, 10000, 300000, 1000, 0, 10000000, "Car price minus your down payment (usually at least 10%)."),
+    field("years", "Tenure (years)", 9, 1, 9, 1, 1, 9, "Up to 9 years for most new cars."),
+    field("flat", "Flat rate quoted (% a year)", 3, 0, 10, 0.05, 0, 10, "Old-style quote. New agreements under the 2026 rules quote the EIR instead."),
+    '    <div class="divider"></div>',
+    field("pay", "Your take-home pay a month (RM)", 2940, 1000, 20000, 50, 0, 10000000, "RM2,940 is Malaysia's median monthly pay (DOSM, 2025)."),
+]) + """
+  </form>
+  <div class="stack">
+""" + card("Your monthly instalment", "RM1,175.93", [
+    ("Same loan as an EIR of", "eir", True), ("Total interest", "interest", False),
+    ("Total you repay", "total", False), ("Share of your take-home pay", "share", True)],
+    '<span><b style="background: var(--gold-fill)"></b>Loan</span><span><b style="background: rgba(255,243,224,.55)"></b>Interest</span>') + """
+  </div>
+</section>
+<section class="mid" aria-label="Compare tenures">
+  <h2>Got an EIR quote? Compare tenures</h2>
+  <p>Same loan amount as above. A longer tenure lowers the monthly instalment, but you pay more interest in total.</p>
+  <form class="controls" autocomplete="off">
+""" + "\n".join([
+    field("rate", "EIR quoted (% a year)", 5.5, 1, 17, 0.05, 0, 17, "The EIR is capped at 17% a year up to 5 years and 16% above 5 years for fixed-rate loans."),
+]) + """
+  </form>
+  <p class="out" id="tenOut"></p>
+  <p class="fine">Interest is worked out on the reducing balance with equal monthly instalments, the method the Hire-Purchase (Amendment) Act 2026 uses for new agreements from 1 June 2026. The flat-rate maths (interest on the full loan for every year) is how older agreements were quoted. Example from Bank Negara Malaysia: RM100,000 over 9 years at 3% flat or 5.5% EIR is RM1,175.93 a month and RM27,000 of interest. Insurance or takaful, road tax, servicing, petrol and late charges are not included. Your lender's figures may differ slightly through rounding and fees. Education only, not financial advice.</p>
+</section>"""
+car_js = r"""
+const { $, rm } = RIM;
+const rm2 = (v) => "RM" + v.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pmt = (P, eir, n) => { const i = eir / 100 / 12; return i === 0 ? P / n : (P * i) / (1 - Math.pow(1 + i, -n)); };
+function eirOf(P, m, n) {
+  if (m * n <= P + 1e-9) return 0;
+  let lo = 0, hi = 100;
+  for (let k = 0; k < 200; k++) { const mid = (lo + hi) / 2; if (pmt(P, mid, n) > m) hi = mid; else lo = mid; }
+  return (lo + hi) / 2;
+}
+let loanNow = 100000;
+RIM.form("rim-car", { loan: 100000, years: 9, flat: 3, pay: 2940 },
+  { loan: [0, 10000000], years: [1, 9], flat: [0, 10], pay: [0, 10000000] }, (s) => {
+  const n = Math.round(s.years) * 12;
+  const interest = s.loan * (s.flat / 100) * Math.round(s.years);
+  const total = s.loan + interest, m = n > 0 ? total / n : 0;
+  const e = eirOf(s.loan, m, n);
+  loanNow = s.loan;
+  $("big").textContent = rm2(m);
+  $("eir").textContent = e.toFixed(2) + "%";
+  $("interest").textContent = rm(interest);
+  $("total").textContent = rm(total);
+  $("share").textContent = s.pay > 0 ? ((m / s.pay) * 100).toFixed(1) + "%" : "-";
+  const pa = total > 0 ? (s.loan / total) * 100 : 100;
+  $("splitA").style.cssText = `width:${pa}%;background:var(--gold-fill)`;
+  $("splitB").style.cssText = `width:${100 - pa}%;background:rgba(255,243,224,.55)`;
+  $("splitC").style.cssText = "width:0";
+  window.__copy = `A ${rm(s.loan)} car loan at ${s.flat}% flat over ${Math.round(s.years)} years is really about ${e.toFixed(2)}% EIR: ${rm2(m)} a month and ${rm(interest)} of interest. (Ringgit in Motion car loan calculator)`;
+  tenRender();
+});
+function tenRender() {
+  const r = Math.min(17, Math.max(0, parseFloat($("rate").value) || 0));
+  const rows = [5, 7, 9].map((y) => { const m = pmt(loanNow, r, y * 12); return { y, m, i: m * y * 12 - loanNow }; });
+  $("tenOut").innerHTML = rows.map((x) => `<strong>${x.y} years</strong>: ${rm2(x.m)} a month, ${rm(x.i)} interest`).join("<br>") +
+    `<br>9 years instead of 5 costs <strong>${rm(rows[2].i - rows[0].i)}</strong> more in interest.`;
+}
+const syncT = (src, dst) => $(src).addEventListener("input", () => { $(dst).value = $(src).value; tenRender(); });
+syncT("rate", "rateR"); syncT("rateR", "rate");
+tenRender();
+$("copy").addEventListener("click", () => RIM.copy(window.__copy));
+"""
+page("car.html", "Car Loan Calculator · Ringgit in Motion", "Malaysia car loan reality check: turn a flat rate into the real EIR, see the monthly instalment, total interest and share of your pay, and compare 5, 7 and 9 year tenures.", car_body, car_js)

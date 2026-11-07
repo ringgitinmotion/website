@@ -18,6 +18,7 @@ Live address: **https://ringgitinmotion.github.io/website/**
 | Park your cash | POCKET | https://ringgitinmotion.github.io/website/park.html |
 | BNPL calculator | TOTAL | https://ringgitinmotion.github.io/website/bnpl.html |
 | Price in hours (24-hour rule) | COOL | https://ringgitinmotion.github.io/website/hours.html |
+| Car loan reality check | ROAD | https://ringgitinmotion.github.io/website/car.html |
 
 ## One-time setup (already done once Pages is switched on)
 
